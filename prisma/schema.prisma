@@ -1,0 +1,172 @@
+// Schema Prisma — plataforma de video-aulas + integração Hotmart
+//
+// Decisões que valem lembrar (detalhadas em integracao-hotmart-plataforma-cursos.md):
+// - video_provider fica por AULA (Lesson), não por curso, pra permitir migrar
+//   aos poucos de YouTube pra Panda/Vimeo.
+// - WebhookEvent guarda o payload cru de cada evento da Hotmart, indexado pelo
+//   id da transação, pra idempotência e auditoria.
+// - Enrollment é o que efetivamente controla acesso; nunca derive acesso
+//   direto de "existe uma compra", sempre cheque enrollment.status === ACTIVE.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Usuários (alunos)
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?  @map("password_hash") // null até o aluno definir senha (conta criada via webhook)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  enrollments Enrollment[]
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// Catálogo: produto Hotmart -> curso -> módulos -> aulas
+// ---------------------------------------------------------------------------
+
+model Course {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  description   String?
+  coverImageUrl String?  @map("cover_image_url") // capa mostrada no catálogo (/)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  products    Product[]
+  modules     Module[]
+  enrollments Enrollment[]
+
+  @@map("courses")
+}
+
+// Liga um produto (e, opcionalmente, uma oferta específica dentro do produto)
+// da Hotmart a um curso da plataforma. Um produto Hotmart com múltiplas
+// ofertas (ex: "básico" vs "completo") pode mapear pra cursos diferentes —
+// por isso hotmartOfferCode é parte da chave, não só o produto.
+model Product {
+  id               String   @id @default(cuid())
+  hotmartProductId String   @map("hotmart_product_id")
+  hotmartOfferCode String?  @map("hotmart_offer_code") // null = produto sem múltiplas ofertas
+  courseId         String   @map("course_id")
+  course           Course   @relation(fields: [courseId], references: [id])
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@unique([hotmartProductId, hotmartOfferCode])
+  @@map("products")
+}
+
+model Module {
+  id       String @id @default(cuid())
+  courseId String @map("course_id")
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title    String
+  order    Int
+
+  lessons Lesson[]
+
+  @@unique([courseId, order])
+  @@map("modules")
+}
+
+enum VideoProvider {
+  YOUTUBE
+  VIMEO
+  PANDA
+}
+
+model Lesson {
+  id              String        @id @default(cuid())
+  moduleId        String        @map("module_id")
+  module          Module        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title           String
+  order           Int
+  videoProvider   VideoProvider @map("video_provider")
+  videoExternalId String        @map("video_external_id") // id do vídeo no provedor — nunca a URL pública
+  durationSeconds Int?          @map("duration_seconds")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@unique([moduleId, order])
+  @@map("lessons")
+}
+
+// ---------------------------------------------------------------------------
+// Acesso concedido (o que efetivamente libera/bloqueia o aluno)
+// ---------------------------------------------------------------------------
+
+enum EnrollmentStatus {
+  PENDING // compra iniciada mas ainda não confirmada (ex: boleto aguardando pagamento)
+  ACTIVE
+  REVOKED // reembolso, chargeback, cancelamento
+}
+
+model Enrollment {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  courseId String @map("course_id")
+  course   Course @relation(fields: [courseId], references: [id])
+
+  status EnrollmentStatus @default(PENDING)
+
+  // transação Hotmart que originou (ou revogou) esse acesso — usado pra
+  // rastrear a causa de uma mudança de status e cruzar com WebhookEvent
+  sourceTransaction String? @map("source_transaction")
+
+  grantedAt DateTime? @map("granted_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  // usado no caso de SUBSCRIPTION_CANCELLATION: a assinatura foi cancelada,
+  // mas o aluno já pagou o ciclo atual — o acesso continua ACTIVE até essa
+  // data, quando um job deve revogar de fato
+  scheduledRevocationAt DateTime? @map("scheduled_revocation_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, courseId])
+  @@index([status])
+  @@map("enrollments")
+}
+
+// ---------------------------------------------------------------------------
+// Log bruto de auditoria + idempotência dos webhooks da Hotmart
+// ---------------------------------------------------------------------------
+
+enum WebhookEventStatus {
+  RECEIVED // chegou, ainda não processado (fila)
+  PROCESSED
+  FAILED
+  IGNORED // ex: evento de teste do painel Hotmart
+}
+
+model WebhookEvent {
+  id          String             @id @default(cuid())
+  eventId     String             @unique @map("event_id") // transaction/order id da Hotmart
+  eventType   String             @map("event_type") // ex: "PURCHASE_APPROVED"
+  payload     Json
+  status      WebhookEventStatus @default(RECEIVED)
+  error       String?
+  receivedAt  DateTime           @default(now()) @map("received_at")
+  processedAt DateTime?          @map("processed_at")
+
+  @@index([status])
+  @@index([eventType])
+  @@map("webhook_events")
+}
