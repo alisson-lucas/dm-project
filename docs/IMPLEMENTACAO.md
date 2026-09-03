@@ -18,14 +18,14 @@ Vimeo / Panda), sempre com checagem de matrícula ativa no servidor.
 
 **Stack final:**
 
-| Camada | Tecnologia |
-| --- | --- |
-| Framework | Next.js 15 (App Router) + React 19 |
-| Linguagem | TypeScript (strict) |
-| ORM / banco | Prisma 6 + PostgreSQL |
-| Sessão | JWT em cookie `httpOnly` (lib `jose`) |
-| Senha | `bcryptjs` |
-| Estilo | CSS puro (`src/app/globals.css`), sem framework de UI |
+| Camada      | Tecnologia                                                     |
+| ----------- | -------------------------------------------------------------- |
+| Framework   | Next.js 15 (App Router) + React 19                             |
+| Linguagem   | TypeScript (strict)                                            |
+| ORM / banco | Prisma 6 + PostgreSQL                                          |
+| Sessão      | JWT em cookie `httpOnly` (lib `jose`)                          |
+| Senha       | `bcryptjs`                                                     |
+| Estilo      | tailwindCss                                                    |
 | Deploy alvo | Vercel (crons via `vercel.json`) — funciona self-hosted também |
 
 ---
@@ -141,28 +141,28 @@ por `src/lib/auth.ts`.
 
 ### API (Route Handlers)
 
-| Método | Rota | Descrição |
-| --- | --- | --- |
-| `POST` | `/api/webhooks/hotmart` | Valida o Hottok (`x-hotmart-hottok` header **ou** `body.hottok` — confirmar no painel), grava o evento e responde `200` rápido. O processamento pesado roda em `after()` (depois da resposta). |
-| `GET` | `/api/lessons/:id/player` | Retorna `{ provider, embedUrl }` da aula — `401` sem sessão, `403` sem matrícula ativa, `404` se a aula não existe. |
-| `POST` | `/api/auth/login` | `{ email, password }` → valida com `bcrypt.compare` → seta cookie de sessão. Resposta genérica pra não vazar quais e-mails existem. |
-| `POST` | `/api/auth/set-password` | **PLACEHOLDER.** Define a senha de uma conta criada pelo webhook, permitido **só enquanto `passwordHash` é null**. Em produção precisa de token enviado por e-mail. |
-| `POST` | `/api/auth/logout` | Limpa o cookie. |
-| `GET` | `/api/auth/me` | `{ id, email, name }` do usuário logado, ou `401`. |
-| `GET` | `/api/cron/reconcile-webhooks` | Reprocessa eventos travados em `RECEIVED`. Protegido por `CRON_SECRET`. |
-| `GET` | `/api/cron/revoke-expired-enrollments` | Efetiva revogações agendadas (assinatura cancelada com ciclo pago restante). Protegido por `CRON_SECRET`. |
+| Método | Rota                                   | Descrição                                                                                                                                                                                      |
+| ------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/webhooks/hotmart`                | Valida o Hottok (`x-hotmart-hottok` header **ou** `body.hottok` — confirmar no painel), grava o evento e responde `200` rápido. O processamento pesado roda em `after()` (depois da resposta). |
+| `GET`  | `/api/lessons/:id/player`              | Retorna `{ provider, embedUrl }` da aula — `401` sem sessão, `403` sem matrícula ativa, `404` se a aula não existe.                                                                            |
+| `POST` | `/api/auth/login`                      | `{ email, password }` → valida com `bcrypt.compare` → seta cookie de sessão. Resposta genérica pra não vazar quais e-mails existem.                                                            |
+| `POST` | `/api/auth/set-password`               | **PLACEHOLDER.** Define a senha de uma conta criada pelo webhook, permitido **só enquanto `passwordHash` é null**. Em produção precisa de token enviado por e-mail.                            |
+| `POST` | `/api/auth/logout`                     | Limpa o cookie.                                                                                                                                                                                |
+| `GET`  | `/api/auth/me`                         | `{ id, email, name }` do usuário logado, ou `401`.                                                                                                                                             |
+| `GET`  | `/api/cron/reconcile-webhooks`         | Reprocessa eventos travados em `RECEIVED`. Protegido por `CRON_SECRET`.                                                                                                                        |
+| `GET`  | `/api/cron/revoke-expired-enrollments` | Efetiva revogações agendadas (assinatura cancelada com ciclo pago restante). Protegido por `CRON_SECRET`.                                                                                      |
 
 Todos os handlers têm `export const dynamic = "force-dynamic"` e rodam no runtime
 Node (padrão) — necessário pro Prisma.
 
 ### Páginas (App Router)
 
-| Rota | Descrição |
-| --- | --- |
-| `/` | **Tela inicial.** Hero carrossel com um slide por curso cadastrado (capa de fundo, título, "▶ Ver curso" se matriculado ou "🔒 Disponível após a compra" se não; setas + dots + auto-avanço a cada 7s). Abaixo, seção **Seus cursos** (grid só dos matriculados). Sem sessão → `/login`. |
-| `/courses/:slug` | **Página interna do curso.** Hero do curso (capa de fundo) + carrosséis de aulas por módulo. `404` se o curso não existe; tela "Você ainda não tem este curso" se o aluno não tem matrícula ativa. |
-| `/lessons/:id` | **Player.** `<iframe>` responsivo 16:9 do embed + playlist do módulo na lateral (aula atual destacada com a borda accent). "Voltar" leva pro `/courses/:slug`. `redirect("/login")` sem sessão; `notFound()` se a aula não existe; tela de acesso negado sem matrícula. |
-| `/login` | Form com dois modos: **Entrar** (e-mail + senha) e **Primeiro acesso** (definir senha). Client component; usa `useSearchParams().get("next")` pra voltar pra página de origem. |
+| Rota             | Descrição                                                                                                                                                                                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`              | **Tela inicial.** Hero carrossel com um slide por curso cadastrado (capa de fundo, título, "▶ Ver curso" se matriculado ou "🔒 Disponível após a compra" se não; setas + dots + auto-avanço a cada 7s). Abaixo, seção **Seus cursos** (grid só dos matriculados). Sem sessão → `/login`. |
+| `/courses/:slug` | **Página interna do curso.** Hero do curso (capa de fundo) + carrosséis de aulas por módulo. `404` se o curso não existe; tela "Você ainda não tem este curso" se o aluno não tem matrícula ativa.                                                                                       |
+| `/lessons/:id`   | **Player.** `<iframe>` responsivo 16:9 do embed + playlist do módulo na lateral (aula atual destacada com a borda accent). "Voltar" leva pro `/courses/:slug`. `redirect("/login")` sem sessão; `notFound()` se a aula não existe; tela de acesso negado sem matrícula.                  |
+| `/login`         | Form com dois modos: **Entrar** (e-mail + senha) e **Primeiro acesso** (definir senha). Client component; usa `useSearchParams().get("next")` pra voltar pra página de origem.                                                                                                           |
 
 `src/middleware.ts` faz `matcher: ["/courses/:path*", "/lessons/:path*"]` — quem
 não tem cookie de sessão válido é redirecionado pro `/login?next=<pathname>`. As
@@ -253,16 +253,16 @@ Não há processo separado — são rotas `GET` idempotentes protegidas por
 `CRON_SECRET` (`src/lib/cron.ts#assertCronRequest`, que aceita
 `Authorization: Bearer <CRON_SECRET>` **ou** `?secret=<CRON_SECRET>`).
 
-| Rota | Frequência | O que faz |
-| --- | --- | --- |
-| `/api/cron/reconcile-webhooks` | a cada 5 min (`*/5 * * * *`) | `reconcileStuckWebhookEvents()` — reprocessa `WebhookEvent` presos em `RECEIVED` há mais de 5 min. |
-| `/api/cron/revoke-expired-enrollments` | a cada hora (`0 * * * *`) | `revokeExpiredEnrollments()` — `Enrollment` `ACTIVE` com `scheduledRevocationAt <= agora` viram `REVOKED`. |
+| Rota                                   | Frequência                   | O que faz                                                                                                  |
+| -------------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `/api/cron/reconcile-webhooks`         | a cada 5 min (`*/5 * * * *`) | `reconcileStuckWebhookEvents()` — reprocessa `WebhookEvent` presos em `RECEIVED` há mais de 5 min.         |
+| `/api/cron/revoke-expired-enrollments` | a cada hora (`0 * * * *`)    | `revokeExpiredEnrollments()` — `Enrollment` `ACTIVE` com `scheduledRevocationAt <= agora` viram `REVOKED`. |
 
 - **Vercel** — `vercel.json` já declara os dois schedules. Basta definir a env
   var `CRON_SECRET` no projeto; a Vercel manda o header `Authorization: Bearer`
   automaticamente.
 - **Self-hosted** — chamar as rotas pelo `crontab` com `curl -H "Authorization:
-  Bearer $CRON_SECRET" ...` (ou `?secret=`).
+Bearer $CRON_SECRET" ...` (ou `?secret=`).
 
 ---
 
@@ -340,11 +340,11 @@ migrations aplicadas).
 
 ### Cursos de exemplo (tema guitarra)
 
-| Curso | slug | Módulos / aulas | Matrícula do `aluno.ativo` |
-| --- | --- | --- | --- |
-| **Guitarra para Iniciantes** | `guitarra-para-iniciantes` | Primeiros passos (Conhecendo a guitarra, Afinação e postura das mãos) · Acordes e ritmo (Acordes maiores e menores, Batidas e levadas essenciais) | ACTIVE |
-| **Solos e Improviso** | `solos-e-improviso` | Pentatônica na prática (As 5 posições da pentatônica, Bend/hammer-on/pull-off) | ACTIVE |
-| **Harmonia no Braço** | `harmonia-no-braco` | Campo harmônico maior (Montando o campo harmônico, Progressões mais usadas) | *nenhuma* — serve pra ver o card "não matriculado" e a tela de acesso negado |
+| Curso                        | slug                       | Módulos / aulas                                                                                                                                   | Matrícula do `aluno.ativo`                                                   |
+| ---------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Guitarra para Iniciantes** | `guitarra-para-iniciantes` | Primeiros passos (Conhecendo a guitarra, Afinação e postura das mãos) · Acordes e ritmo (Acordes maiores e menores, Batidas e levadas essenciais) | ACTIVE                                                                       |
+| **Solos e Improviso**        | `solos-e-improviso`        | Pentatônica na prática (As 5 posições da pentatônica, Bend/hammer-on/pull-off)                                                                    | ACTIVE                                                                       |
+| **Harmonia no Braço**        | `harmonia-no-braco`        | Campo harmônico maior (Montando o campo harmônico, Progressões mais usadas)                                                                       | _nenhuma_ — serve pra ver o card "não matriculado" e a tela de acesso negado |
 
 > Os `id` internos (`course-nextjs`, `mod-intro`, `lesson-boas-vindas`, …) e os
 > `videoExternalId` / capas continuam sendo os do scaffold original — são
@@ -354,12 +354,12 @@ migrations aplicadas).
 
 ### Usuários de teste
 
-| E-mail | Senha | Estado | Serve pra testar |
-| --- | --- | --- | --- |
-| `aluno.ativo@example.com` | `senha12345` | ACTIVE em 2 cursos | login + catálogo + player liberado |
-| `aluno.pendente@example.com` | *(sem senha)* | PENDING | fluxo `/api/auth/set-password` |
-| `aluno.revogado@example.com` | `senha12345` | REVOKED | login OK, curso/player devolve acesso negado |
-| `sem.matricula@example.com` | `senha12345` | sem matrícula | idem |
+| E-mail                       | Senha         | Estado             | Serve pra testar                             |
+| ---------------------------- | ------------- | ------------------ | -------------------------------------------- |
+| `aluno.ativo@example.com`    | `senha12345`  | ACTIVE em 2 cursos | login + catálogo + player liberado           |
+| `aluno.pendente@example.com` | _(sem senha)_ | PENDING            | fluxo `/api/auth/set-password`               |
+| `aluno.revogado@example.com` | `senha12345`  | REVOKED            | login OK, curso/player devolve acesso negado |
+| `sem.matricula@example.com`  | `senha12345`  | sem matrícula      | idem                                         |
 
 Cria também 1 `WebhookEvent` de exemplo (`eventId: seed-tx-0001`, status
 `PROCESSED`) pra visualizar a tabela no Prisma Studio.
@@ -382,15 +382,15 @@ Cria também 1 `WebhookEvent` de exemplo (`eventId: seed-tx-0001`, status
 
 ### Componentes
 
-| Componente | Tipo | Onde é usado |
-| --- | --- | --- |
-| `TopBar` | server | todas as páginas logadas — logo "CURSOS", link "Início", e-mail, botão "Sair" |
-| `LogoutButton` | client | dentro do `TopBar` — `POST /api/auth/logout` + `router.push("/login")` |
+| Componente     | Tipo   | Onde é usado                                                                                       |
+| -------------- | ------ | -------------------------------------------------------------------------------------------------- |
+| `TopBar`       | server | todas as páginas logadas — logo "CURSOS", link "Início", e-mail, botão "Sair"                      |
+| `LogoutButton` | client | dentro do `TopBar` — `POST /api/auth/logout` + `router.push("/login")`                             |
 | `HeroCarousel` | client | `/` — slides absolutos com crossfade, `setInterval` de 7s pausado no hover/foco, setas `‹ ›`, dots |
-| `Hero` | server | `/courses/[slug]` — hero de um curso; fundo = `coverImageUrl` ou thumb do YouTube da 1ª aula |
-| `CourseCard` | server | grid "Seus cursos" — capa 16:9, título, `courseMeta()`; badge "não matriculado" via `data-locked` |
-| `LessonRow` | server | `/courses/[slug]` — um por módulo; carrossel horizontal (`grid-auto-flow: column` + `overflow-x`) |
-| `LessonCard` | server | dentro de `LessonRow` — thumb (YouTube) ou fallback com o nome do provedor, badge `1.2`, duração |
+| `Hero`         | server | `/courses/[slug]` — hero de um curso; fundo = `coverImageUrl` ou thumb do YouTube da 1ª aula       |
+| `CourseCard`   | server | grid "Seus cursos" — capa 16:9, título, `courseMeta()`; badge "não matriculado" via `data-locked`  |
+| `LessonRow`    | server | `/courses/[slug]` — um por módulo; carrossel horizontal (`grid-auto-flow: column` + `overflow-x`)  |
+| `LessonCard`   | server | dentro de `LessonRow` — thumb (YouTube) ou fallback com o nome do provedor, badge `1.2`, duração   |
 
 ### Helpers de UI (`src/lib/format.ts`)
 
@@ -411,12 +411,12 @@ fallback com gradiente + nome do provedor.
 
 `.env` (copiar de `.env.example`):
 
-| Var | Obrigatória | Descrição |
-| --- | --- | --- |
-| `DATABASE_URL` | sim | Connection string do Postgres. **Aponte para um banco vazio dedicado a este projeto** (ver seção 13). |
-| `HOTMART_HOTTOK` | sim (pra webhook) | Painel Hotmart → Ferramentas → Webhook → aba Autenticação. |
-| `SESSION_SECRET` | sim | String aleatória longa (assina o cookie JWT). Gerar: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. |
-| `CRON_SECRET` | sim (pra crons) | String aleatória que protege `/api/cron/*`. Na Vercel, definir a env var basta — ela injeta o `Bearer` automaticamente. |
+| Var              | Obrigatória       | Descrição                                                                                                                           |
+| ---------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`   | sim               | Connection string do Postgres. **Aponte para um banco vazio dedicado a este projeto** (ver seção 13).                               |
+| `HOTMART_HOTTOK` | sim (pra webhook) | Painel Hotmart → Ferramentas → Webhook → aba Autenticação.                                                                          |
+| `SESSION_SECRET` | sim               | String aleatória longa (assina o cookie JWT). Gerar: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. |
+| `CRON_SECRET`    | sim (pra crons)   | String aleatória que protege `/api/cron/*`. Na Vercel, definir a env var basta — ela injeta o `Bearer` automaticamente.             |
 
 O Next carrega o `.env` sozinho (dev e build). Não há mais `dotenv` no projeto.
 

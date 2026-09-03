@@ -22,6 +22,7 @@ export type LessonPlayerResult =
         id: string;
         title: string;
         moduleTitle: string;
+        courseId: string;
         courseTitle: string;
         courseSlug: string;
       };
@@ -69,6 +70,7 @@ export async function getLessonPlayerForUser(
       id: lesson.id,
       title: lesson.title,
       moduleTitle: lesson.module.title,
+      courseId: lesson.module.courseId,
       courseTitle: lesson.module.course.title,
       courseSlug: lesson.module.course.slug,
     },

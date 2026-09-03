@@ -10,7 +10,8 @@ export async function getCatalog(userId: string) {
       orderBy: { createdAt: "asc" },
       include: {
         _count: { select: { modules: true } },
-        modules: { select: { _count: { select: { lessons: true } } } },
+        // as durações vêm junto pra o card mostrar "14 aulas · 3h20"
+        modules: { select: { lessons: { select: { durationSeconds: true } } } },
       },
     }),
     prisma.enrollment.findMany({
@@ -27,8 +28,14 @@ export async function getCatalog(userId: string) {
     title: c.title,
     description: c.description,
     coverImageUrl: c.coverImageUrl,
+    category: c.category,
+    level: c.level,
     moduleCount: c._count.modules,
-    lessonCount: c.modules.reduce((n, m) => n + m._count.lessons, 0),
+    lessonCount: c.modules.reduce((n, m) => n + m.lessons.length, 0),
+    durationSeconds: c.modules.reduce(
+      (n, m) => n + m.lessons.reduce((s, l) => s + (l.durationSeconds ?? 0), 0),
+      0
+    ),
     enrolled: enrolledIds.has(c.id),
   }));
 
@@ -37,36 +44,5 @@ export async function getCatalog(userId: string) {
 
 export type CatalogCourse = Awaited<ReturnType<typeof getCatalog>>["all"][number];
 
-// Um curso específico (por slug), com módulos e aulas ordenados — mas só se o
-// aluno tiver matrícula ATIVA nele. Usado na página interna /courses/[slug].
-export async function getCourseForUser(userId: string, slug: string) {
-  const course = await prisma.course.findUnique({
-    where: { slug },
-    include: {
-      modules: {
-        orderBy: { order: "asc" },
-        include: { lessons: { orderBy: { order: "asc" } } },
-      },
-    },
-  });
-
-  if (!course) return { status: "not-found" as const };
-
-  const enrollment = await prisma.enrollment.findUnique({
-    where: { userId_courseId: { userId, courseId: course.id } },
-  });
-
-  if (!enrollment || enrollment.status !== EnrollmentStatus.ACTIVE) {
-    return { status: "forbidden" as const };
-  }
-
-  const firstLesson = course.modules.flatMap((m) => m.lessons)[0] ?? null;
-  return { status: "ok" as const, course, firstLesson };
-}
-
-export type CourseForUser = Awaited<ReturnType<typeof getCourseForUser>>;
-export type CourseWithModules = Extract<
-  CourseForUser,
-  { status: "ok" }
->["course"];
-export type CourseModule = CourseWithModules["modules"][number];
+// A ficha de um curso específico vive em ./coursePage (getCoursePageForUser) —
+// ela precisa do progresso da matrícula, não só do catálogo.

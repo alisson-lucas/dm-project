@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { btnGhost } from "../lib/ui";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -9,7 +10,7 @@ export function LogoutButton() {
 
   return (
     <button
-      className="nf-btn nf-btn-ghost"
+      className={btnGhost}
       disabled={busy}
       onClick={async () => {
         setBusy(true);

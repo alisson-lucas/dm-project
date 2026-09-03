@@ -2,8 +2,14 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { btnPrimary } from "../../lib/ui";
+import { SITE_NAME } from "../../lib/site";
 
 type Mode = "login" | "first-access";
+
+const field =
+  "w-full mb-3 rounded-lg border border-white/8 bg-[#0f0f13] px-3.5 py-3 " +
+  "text-[0.95rem] text-text focus:border-accent focus:outline-none";
 
 function LoginForm() {
   const router = useRouter();
@@ -42,11 +48,15 @@ function LoginForm() {
   }
 
   return (
-    <main className="nf-auth">
-      <div className="nf-auth-card">
-        <div className="nf-auth-logo">CURSOS</div>
-        <h1>{mode === "login" ? "Entrar" : "Primeiro acesso"}</h1>
-        <p className="nf-auth-sub">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden p-6 before:absolute before:inset-0 before:content-[''] before:bg-[radial-gradient(60%_50%_at_50%_0%,rgba(158,34,76,0.28),transparent_70%)]">
+      <div className="relative w-full max-w-95 rounded-[14px] border border-white/8 bg-[rgba(20,20,26,0.86)] px-8 py-9 backdrop-blur-sm">
+        <div className="mb-5.5 text-[1.1rem] font-extrabold tracking-[0.2em] text-accent-2">
+          {SITE_NAME}
+        </div>
+        <h1 className="mb-1 text-[1.5rem] font-bold">
+          {mode === "login" ? "Entrar" : "Primeiro acesso"}
+        </h1>
+        <p className="mb-5.5 text-[0.9rem] text-text-dim">
           {mode === "login"
             ? "Use seu e-mail e senha."
             : "Defina a senha da conta criada na sua compra."}
@@ -54,7 +64,7 @@ function LoginForm() {
 
         <form onSubmit={submit}>
           <input
-            className="nf-field"
+            className={field}
             type="email"
             required
             placeholder="e-mail"
@@ -63,7 +73,7 @@ function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
-            className="nf-field"
+            className={field}
             type="password"
             required
             minLength={mode === "first-access" ? 8 : undefined}
@@ -77,11 +87,13 @@ function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          {error ? <p className="nf-auth-error">{error}</p> : null}
+          {error ? (
+            <p className="mb-2.5 text-[0.82rem] text-[#ff8ba7]">{error}</p>
+          ) : null}
 
           <button
             type="submit"
-            className="nf-btn nf-btn-primary"
+            className={`${btnPrimary} mt-1 w-full justify-center py-3!`}
             disabled={busy}
           >
             {busy ? "..." : mode === "login" ? "Entrar" : "Definir senha"}
@@ -90,7 +102,7 @@ function LoginForm() {
 
         <button
           type="button"
-          className="nf-auth-switch"
+          className="mt-4 cursor-pointer p-0 text-[0.82rem] text-text-dim hover:text-text"
           onClick={() => {
             setMode(mode === "login" ? "first-access" : "login");
             setError(null);
