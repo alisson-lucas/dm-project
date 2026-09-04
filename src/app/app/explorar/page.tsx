@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "../../lib/auth";
-import { getCatalog } from "../../services/catalog";
-import { TopBar } from "../../components/TopBar";
-import { ExploreBrowser } from "../../components/ExploreBrowser";
-import { btnPrimary } from "../../lib/ui";
+import { getCurrentUser } from "@/lib/auth";
+import { getCatalog } from "@/services/catalog";
+import { TopBar } from "@/components/TopBar";
+import { ExploreBrowser } from "@/components/ExploreBrowser";
+import { btnPrimary } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,7 @@ export default async function ExplorePage({
   searchParams: Promise<{ estilo?: string }>;
 }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/explorar");
+  if (!user) redirect("/login?next=/app/explorar");
 
   const [{ all }, { estilo }] = await Promise.all([
     getCatalog(user.id),
@@ -56,7 +56,7 @@ export default async function ExplorePage({
                 </p>
               ) : null}
               <Link
-                href={`/courses/${featured.slug}`}
+                href={`/app/courses/${featured.slug}`}
                 className={`${btnPrimary} mt-4`}
               >
                 Ver curso

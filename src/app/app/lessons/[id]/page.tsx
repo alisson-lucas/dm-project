@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { after } from "next/server";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "../../../lib/auth";
-import { getLessonPlayerForUser } from "../../../services/lessonAccess";
-import { markLessonWatched } from "../../../services/progress";
-import { formatDuration } from "../../../lib/format";
-import { TopBar } from "../../../components/TopBar";
-import { backLink, btnGhost, deniedWrap } from "../../../lib/ui";
+import { getCurrentUser } from "@/lib/auth";
+import { getLessonPlayerForUser } from "@/services/lessonAccess";
+import { markLessonWatched } from "@/services/progress";
+import { formatDuration } from "@/lib/format";
+import { TopBar } from "@/components/TopBar";
+import { backLink, btnGhost, deniedWrap } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export default async function LessonPage({
   // O middleware já barra quem não tem sessão; aqui é a checagem de verdade
   // (usuário existe + matrícula ativa no curso da aula).
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=/lessons/${id}`);
+  if (!user) redirect(`/login?next=/app/lessons/${id}`);
 
   const result = await getLessonPlayerForUser(id, user.id);
 
@@ -34,7 +34,7 @@ export default async function LessonPage({
           <h1 className="mb-2.5 text-[1.6rem] font-bold">Acesso não liberado</h1>
           <p className="text-text-dim">{result.message}</p>
           <p className="mt-6">
-            <Link href="/" className={btnGhost}>
+            <Link href="/app" className={btnGhost}>
               Voltar ao início
             </Link>
           </p>
@@ -53,7 +53,7 @@ export default async function LessonPage({
     <>
       <TopBar email={user.email} />
       <main className="max-w-[1200px] mx-auto px-[clamp(16px,4vw,48px)] pb-16 pt-[calc(4rem+24px)]">
-        <Link href={`/courses/${lesson.courseSlug}`} className={backLink}>
+        <Link href={`/app/courses/${lesson.courseSlug}`} className={backLink}>
           ← {lesson.courseTitle}
         </Link>
 
@@ -90,7 +90,7 @@ export default async function LessonPage({
               return (
                 <Link
                   key={s.id}
-                  href={`/lessons/${s.id}`}
+                  href={`/app/lessons/${s.id}`}
                   aria-current={s.id === lesson.id}
                   className="flex gap-2.5 border-b border-white/8 px-4 py-3 text-[0.86rem] text-text-dim last:border-b-0 hover:bg-surface hover:text-text aria-[current=true]:border-l-[3px] aria-[current=true]:border-l-accent aria-[current=true]:bg-accent/[0.14] aria-[current=true]:pl-[13px] aria-[current=true]:text-text"
                 >

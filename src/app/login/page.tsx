@@ -14,7 +14,7 @@ const field =
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/";
+  const next = searchParams.get("next") || "/app";
 
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");

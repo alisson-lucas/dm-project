@@ -74,7 +74,7 @@ export function CourseContents({ modules }: { modules: CoursePageModule[] }) {
                 {m.lessons.map((l) => (
                   <Link
                     key={l.id}
-                    href={`/lessons/${l.id}`}
+                    href={`/app/lessons/${l.id}`}
                     aria-current={l.status === "current"}
                     className="flex items-center gap-3.5 border-t border-white/8 py-3 pl-[22px] pr-5 transition-colors hover:bg-surface-2"
                   >

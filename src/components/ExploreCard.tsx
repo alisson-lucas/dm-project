@@ -19,7 +19,7 @@ export function ExploreCard({
 
   return (
     <Link
-      href={`/courses/${course.slug}`}
+      href={`/app/courses/${course.slug}`}
       data-locked={!course.enrolled}
       className={`group flex flex-col overflow-hidden rounded-lg border border-white/8 bg-surface transition duration-200 hover:-translate-y-[3px] hover:border-accent/60 hover:shadow-[0_18px_40px_-16px_rgba(0,0,0,0.7)] ${
         layout === "row" ? "w-[230px] flex-none snap-start" : "w-full"

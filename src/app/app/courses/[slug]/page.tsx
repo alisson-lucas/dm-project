@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "../../../lib/auth";
-import { getCoursePageForUser } from "../../../services/coursePage";
-import { TopBar } from "../../../components/TopBar";
-import { CourseContents } from "../../../components/CourseContents";
-import { btnGhost, btnPrimary, deniedWrap, sectionTitle } from "../../../lib/ui";
-import { TEACHER, teacherInitials } from "../../../lib/site";
+import { getCurrentUser } from "@/lib/auth";
+import { getCoursePageForUser } from "@/services/coursePage";
+import { TopBar } from "@/components/TopBar";
+import { CourseContents } from "@/components/CourseContents";
+import { btnGhost, btnPrimary, deniedWrap, sectionTitle } from "@/lib/ui";
+import { TEACHER, teacherInitials } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,7 @@ export default async function CoursePage({
   const { slug } = await params;
 
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=/courses/${slug}`);
+  if (!user) redirect(`/login?next=/app/courses/${slug}`);
 
   const result = await getCoursePageForUser(user.id, slug);
 
@@ -49,7 +49,7 @@ export default async function CoursePage({
             já comprou, aguarde alguns minutos e recarregue.
           </p>
           <p className="mt-6">
-            <Link href="/" className={btnGhost}>
+            <Link href="/app" className={btnGhost}>
               Voltar ao catálogo
             </Link>
           </p>
@@ -95,7 +95,7 @@ export default async function CoursePage({
             {c.currentLesson ? (
               <div className="flex flex-wrap items-center gap-3.5">
                 <Link
-                  href={`/lessons/${c.currentLesson.id}`}
+                  href={`/app/lessons/${c.currentLesson.id}`}
                   className={btnPrimary}
                 >
                   {c.fresh

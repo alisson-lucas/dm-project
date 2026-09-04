@@ -39,10 +39,10 @@ export function ContinueHero({ data }: { data: ContinueWatching }) {
         <p className={heroMeta}>{meta}</p>
 
         <div className={heroActions}>
-          <Link href={`/lessons/${data.lessonId}`} className={btnPrimary}>
+          <Link href={`/app/lessons/${data.lessonId}`} className={btnPrimary}>
             ▶ {data.fresh ? "Começar aula" : "Retomar aula"}
           </Link>
-          <Link href={`/courses/${data.courseSlug}`} className={btnGhost}>
+          <Link href={`/app/courses/${data.courseSlug}`} className={btnGhost}>
             Ver a trilha
           </Link>
         </div>

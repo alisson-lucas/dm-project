@@ -33,7 +33,7 @@ export function TrailStrip({
       {modules.map((m) => (
         <Link
           key={m.id}
-          href={`/courses/${courseSlug}`}
+          href={`/app/courses/${courseSlug}`}
           className={`w-[190px] flex-none snap-start rounded-xl border bg-surface px-[17px] py-[15px] transition-colors hover:border-accent/60 ${
             m.status === "current" ? "border-accent" : "border-white/8"
           }`}
