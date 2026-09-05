@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { btnPrimary } from "../../lib/ui";
-import { SITE_NAME } from "../../lib/site";
+import { Logo } from "../../components/Logo";
 
 type Mode = "login" | "first-access";
 
@@ -50,9 +50,7 @@ function LoginForm() {
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden p-6 before:absolute before:inset-0 before:content-[''] before:bg-[radial-gradient(60%_50%_at_50%_0%,rgba(158,34,76,0.28),transparent_70%)]">
       <div className="relative w-full max-w-95 rounded-[14px] border border-white/8 bg-[rgba(20,20,26,0.86)] px-8 py-9 backdrop-blur-sm">
-        <div className="mb-5.5 text-[1.1rem] font-extrabold tracking-[0.2em] text-accent-2">
-          {SITE_NAME}
-        </div>
+        <Logo className="mb-5.5 text-accent-2" markClassName="h-9 w-9" />
         <h1 className="mb-1 text-[1.5rem] font-bold">
           {mode === "login" ? "Entrar" : "Primeiro acesso"}
         </h1>

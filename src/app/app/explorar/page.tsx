@@ -32,13 +32,13 @@ export default async function ExplorePage({
 
         {featured ? (
           <div className="relative overflow-hidden rounded-2xl border border-white/8">
-            <div className="aspect-[16/6] bg-[radial-gradient(120%_120%_at_85%_0%,rgba(158,34,76,0.4),transparent_60%),linear-gradient(135deg,#2a1a22,#141018)]">
+            <div className="relative aspect-[16/6] bg-[radial-gradient(120%_120%_at_85%_0%,rgba(158,34,76,0.4),transparent_60%),linear-gradient(135deg,#2a1a22,#141018)]">
               {featured.coverImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={featured.coverImageUrl}
                   alt=""
-                  className="h-full w-full object-cover opacity-40"
+                  className="absolute inset-0 h-full w-full object-cover object-[center_28%] opacity-40"
                 />
               ) : null}
             </div>

@@ -6,10 +6,31 @@ export const OFFER = {
   // de compra ficam inertes e a página avisa que falta configurar — melhor
   // isso do que um botão que leva pro lugar errado.
   checkoutUrl: null as string | null,
-  // TODO: preencher com os valores reais da oferta na Hotmart.
-  priceLabel: null as string | null,
-  installmentLabel: null as string | null,
+
+  // ⚠️ TEMPORÁRIO — preço provisório. Ver PLACEHOLDERS no fim deste arquivo.
+  //
+  // Fica em partes (e não numa string só) porque a seção compõe a tipografia
+  // da referência: prefixo pequeno, "R$" médio, número gigante e centavos
+  // menores. Uma string única não daria esse controle.
+  price: {
+    prefix: null as string | null, // ex.: "12x de"
+    amount: "97", // parte inteira, sem "R$"
+    cents: null as string | null, // ex.: ",90"
+    // linha da pílula tracejada; null esconde a pílula
+    alternative: null as string | null, // ex.: "Ou R$ 970,00 à vista"
+  },
+
   guaranteeDays: 7,
+
+  // Checklist da coluna esquerda. As três primeiras linhas (cursos, aulas e
+  // duração) são geradas a partir do catálogo real — estas aqui são as que
+  // não dá pra derivar do banco.
+  includes: [
+    "Trilha em ordem, do primeiro desenho ao improviso",
+    "A plataforma guarda onde você parou",
+    "Assista no computador ou no celular",
+    "Acesso enquanto sua compra estiver ativa",
+  ],
 };
 
 // Caminhos esperados em public/images/landing/, SEM extensão: o build tenta
@@ -73,7 +94,12 @@ export const TEACHER_BIO =
 // Exemplo do formato:
 //   { value: "+12", label: "anos ensinando guitarra" },
 //   { value: "+300", label: "alunos já passaram pelo método" },
-export const TEACHER_STATS: { value: string; label: string }[] = [];
+// ⚠️ TEMPORÁRIO — números provisórios, combinados com o cliente só para o
+// layout não ficar vazio. Ver PLACEHOLDERS no fim deste arquivo.
+export const TEACHER_STATS: { value: string; label: string }[] = [
+  { value: "+30", label: "Anos de experiência" },
+  { value: "+1000", label: "Alunos" },
+];
 
 // Depoimento em vídeo do aluno.
 export const TESTIMONIAL = {
@@ -124,4 +150,23 @@ export const FAQ = [
     q: "Posso assistir pelo celular?",
     a: "Sim. A plataforma funciona no navegador do celular, do tablet e do computador, sem instalar nada.",
   },
+];
+
+// ---------------------------------------------------------------------------
+// Checklist do que ainda é provisório nesta página.
+//
+// "+30 anos" e "+1000 alunos" são AFIRMAÇÕES PÚBLICAS numa página de vendas:
+// se forem ao ar sem confirmação, viram propaganda enganosa. Por isso a lista
+// existe e um aviso aparece na tela — mas SÓ em desenvolvimento, nunca para o
+// visitante (ver components/landing/DevNotice.tsx).
+//
+// Apague a linha correspondente conforme cada item for resolvido; quando a
+// lista esvaziar, o aviso some sozinho.
+// ---------------------------------------------------------------------------
+export const PLACEHOLDERS: string[] = [
+  'TEACHER_STATS: "+30 anos" e "+1000 alunos" são números provisórios',
+  'OFFER.price: "R$ 97" é um preço provisório',
+  "OFFER.checkoutUrl: link de checkout da Hotmart ainda não configurado",
+  "TEACHER_BIO: bio genérica, falta a real do professor",
+  "images.og: falta a imagem de compartilhamento (1200x630)",
 ];

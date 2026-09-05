@@ -17,8 +17,11 @@ export function Cta({
   note?: boolean;
   /** ocupa toda a largura disponível (útil no mobile) */
   full?: boolean;
-  /** "light" é pra usar EM CIMA de um fundo accent, onde o botão carmim sumiria */
-  variant?: "accent" | "light";
+  // "accent"   -> fundo escuro: botão carmim, aviso em cinza claro
+  // "light"    -> fundo carmim: botão branco, aviso em branco
+  // "on-light" -> fundo creme: botão carmim, aviso em tinta escura (senão o
+  //               cinza claro some no creme)
+  variant?: "accent" | "light" | "on-light";
 }) {
   const configured = Boolean(OFFER.checkoutUrl);
 
@@ -47,7 +50,11 @@ export function Cta({
       {note && !configured ? (
         <p
           className={`mt-3 text-[0.75rem] ${
-            variant === "light" ? "text-white/70" : "text-text-faint"
+            variant === "light"
+              ? "text-white/70"
+              : variant === "on-light"
+                ? "text-ink/60"
+                : "text-text-faint"
           }`}
         >
           ⚠ Link de checkout da Hotmart ainda não configurado — veja{" "}

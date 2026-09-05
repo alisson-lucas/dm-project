@@ -32,7 +32,15 @@ export function ExploreCard({
             src={course.coverImageUrl}
             alt=""
             loading="lazy"
-            className="block h-full w-full object-cover group-data-[locked=true]:opacity-50"
+            // `absolute inset-0` e não `h-full`: altura percentual não
+            // resolve dentro de um container que só tem aspect-ratio, então a
+            // imagem assumia a altura natural e ESTICAVA o card. Com as
+            // thumbnails 16:9 antigas isso passava batido porque coincidia
+            // com o aspect-video; com a capa retrato o card virava retrato.
+            //
+            // object-[center_26%] sobe o enquadramento: cortada em 16:9 pelo
+            // centro, a capa pegaria só o tronco e deixaria o rosto de fora.
+            className="absolute inset-0 h-full w-full object-cover object-[center_26%] group-data-[locked=true]:opacity-50"
           />
         ) : (
           <span className="px-3 text-center text-[0.72rem] uppercase tracking-[0.12em] text-text-faint">

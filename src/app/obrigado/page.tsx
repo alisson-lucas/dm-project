@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SITE_NAME, TEACHER } from "@/lib/site";
+import { TEACHER } from "@/lib/site";
+import { Logo } from "@/components/Logo";
 import { btnGhost, btnPrimary } from "@/lib/ui";
 
 // Página de destino pós-compra (configure ela como redirect de obrigado na
@@ -33,9 +34,7 @@ const STEPS = [
 export default function ObrigadoPage() {
   return (
     <main className="mx-auto w-full max-w-[720px] px-[clamp(16px,4vw,48px)] py-[clamp(56px,9vw,110px)]">
-      <p className="text-[0.7rem] font-bold uppercase tracking-[0.17em] text-accent-2">
-        {SITE_NAME}
-      </p>
+      <Logo className="text-accent-2" markClassName="h-9 w-9" />
 
       <h1 className="mt-3.5 text-[clamp(1.9rem,4.5vw,2.5rem)] font-extrabold leading-[1.05] tracking-[-0.03em]">
         Compra confirmada. Bem-vindo!

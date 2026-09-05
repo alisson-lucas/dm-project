@@ -1,5 +1,6 @@
 import { EnrollmentStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+import { courseCover } from "../lib/covers";
 import { formatDuration } from "../lib/format";
 import { getCatalog, type CatalogCourse } from "./catalog";
 
@@ -81,7 +82,7 @@ async function getContinueWatching(
     courseSlug: course.slug,
     courseTitle: course.title,
     courseCategory: course.category,
-    coverImageUrl: course.coverImageUrl,
+    coverImageUrl: courseCover(course.coverImageUrl),
     lessonId: lesson.id,
     lessonTitle: lesson.title,
     lessonDurationLabel: formatDuration(lesson.durationSeconds),

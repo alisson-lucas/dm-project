@@ -1,5 +1,6 @@
 import { EnrollmentStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+import { courseCover } from "../lib/covers";
 import {
   courseLevelLabel,
   formatClock,
@@ -136,7 +137,7 @@ export async function getCoursePageForUser(
       slug: course.slug,
       title: course.title,
       description: course.description,
-      coverImageUrl: course.coverImageUrl,
+      coverImageUrl: courseCover(course.coverImageUrl),
       category: course.category,
       levelLabel: courseLevelLabel(course.level),
       stats: {

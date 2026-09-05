@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SITE_NAME } from "../../lib/site";
+import { Logo } from "../Logo";
 import { OFFER } from "../../lib/landing";
 import { btnGhost } from "../../lib/ui";
 
@@ -8,9 +8,7 @@ export function LandingHeader() {
   return (
     <header className="absolute inset-x-0 top-0 z-50 flex h-16 items-center">
       <div className="mx-auto flex w-full max-w-page items-center gap-6 px-[clamp(16px,4vw,48px)]">
-        <span className="text-[1.15rem] font-extrabold tracking-[0.2em] text-accent-2">
-          {SITE_NAME}
-        </span>
+        <Logo className="text-accent-2" markClassName="h-9 w-9" />
 
         <nav className="ml-auto flex items-center gap-3.5">
           <Link href="/login" className={btnGhost}>

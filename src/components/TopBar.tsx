@@ -1,16 +1,13 @@
 import Link from "next/link";
 import { LogoutButton } from "./LogoutButton";
-import { SITE_NAME } from "../lib/site";
+import { Logo } from "./Logo";
 
 export function TopBar({ email }: { email?: string | null }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center bg-[linear-gradient(180deg,rgba(0,0,0,0.88),rgba(0,0,0,0.4)_60%,transparent)]">
       <div className="flex w-full max-w-page mx-auto items-center gap-7 px-[clamp(16px,4vw,48px)]">
-        <Link
-          href="/app"
-          className="text-[1.15rem] font-extrabold tracking-[0.2em] text-accent-2"
-        >
-          {SITE_NAME}
+        <Link href="/app" className="text-accent-2">
+          <Logo markClassName="h-8 w-8" textClassName="text-[1rem]" />
         </Link>
         <nav className="flex gap-5 text-[0.9rem] text-text-dim max-sm:hidden">
           <Link href="/app" className="hover:text-text">

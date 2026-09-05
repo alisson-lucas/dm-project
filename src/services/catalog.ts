@@ -1,5 +1,6 @@
 import { EnrollmentStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+import { courseCover } from "../lib/covers";
 
 // Catálogo da tela inicial (/): TODOS os cursos existentes, cada um marcado com
 // `enrolled` (se o usuário tem matrícula ATIVA nele). A lista "enrolled" é só um
@@ -27,7 +28,7 @@ export async function getCatalog(userId: string) {
     slug: c.slug,
     title: c.title,
     description: c.description,
-    coverImageUrl: c.coverImageUrl,
+    coverImageUrl: courseCover(c.coverImageUrl),
     category: c.category,
     level: c.level,
     moduleCount: c._count.modules,

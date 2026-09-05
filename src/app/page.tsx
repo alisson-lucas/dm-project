@@ -3,10 +3,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getLandingData } from '@/services/landing'
 import { LandingHeader } from '@/components/landing/LandingHeader'
+import { Logo } from '@/components/Logo'
+import { DevNotice } from '@/components/landing/DevNotice'
 import { VideoFacade } from '@/components/landing/VideoFacade'
 import { Cta } from '@/components/landing/Cta'
 import { Ticker } from '@/components/landing/Ticker'
 import { CourseCarousel } from '@/components/landing/CourseCarousel'
+import { Offer } from '@/components/landing/Offer'
 import { HeroPortrait } from '@/components/landing/HeroPortrait'
 import { SITE_NAME, TEACHER } from '@/lib/site'
 import {
@@ -18,7 +21,7 @@ import {
   TEACHER_STATS,
   TESTIMONIAL,
 } from '@/lib/landing'
-import { heroBg, sectionTitle } from '@/lib/ui'
+import { sectionTitle } from '@/lib/ui'
 import { plural } from '@/lib/format'
 
 // Landing é ISR, NÃO force-dynamic como as páginas da área logada: ela recebe
@@ -77,63 +80,110 @@ export default async function LandingPage() {
 
   return (
     <>
+      {/* <DevNotice /> */}
       <LandingHeader />
 
       <main>
         {/* ---------------------------------------------------------- hero */}
-        <section className="relative overflow-hidden">
-          <div className={heroBg} aria-hidden />
+        {/* Composição da referência Nexora: figura recortada CENTRALIZADA, os
+            dois blocos de texto flanqueando lá em cima, headline gigante
+            atravessando a base por cima da figura e os botões no canto
+            inferior esquerdo. Fundo escuro com halo carmim chapado atrás da
+            figura, trama de pontos e réguas verticais. */}
+        <section className="relative isolate flex min-h-[min(94vh,900px)] flex-col overflow-hidden">
+          {/* camadas de fundo */}
+          <div aria-hidden className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_0%,#1a1016,#0b0b0f_62%)]" />
+            {/* trama de pontos, densa no centro e sumindo nas bordas */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,255,255,0.10)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(74%_64%_at_50%_46%,#000_8%,transparent_78%)]" />
+            {/* réguas verticais da grade */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:25%_100%] [mask-image:linear-gradient(to_bottom,transparent,#000_16%,#000_84%,transparent)]" />
+          </div>
 
           <div
-            className={`${wrap} relative z-2 grid items-center gap-[clamp(28px,5vw,56px)] pb-14 pt-28 lg:pb-20 lg:pt-32 ${
-              // sem a foto ainda, o texto ocupa a largura toda em vez de
-              // deixar meia dobra vazia
-              images.hero ? 'lg:grid-cols-[1.05fr_0.95fr]' : 'max-w-[60ch]'
-            }`}
+            className={`${wrap} relative z-10 flex flex-1 flex-col pt-28 lg:pt-32`}
           >
-            <div>
-              {/* linha de fatos — no lugar do "data + local" da referência */}
-              <ul className="mb-6 flex flex-wrap gap-x-6 gap-y-2">
-                {HERO.facts.map((fact) => (
-                  <li
-                    key={fact}
-                    className="flex items-center gap-2 text-[0.78rem] font-medium text-text-dim"
-                  >
-                    <span
-                      aria-hidden
-                      className="h-1.5 w-1.5 flex-none rounded-full bg-accent-2"
-                    />
-                    {fact}
-                  </li>
-                ))}
-              </ul>
+            {/* ---- linha de cima: textos flanqueando a figura ---- */}
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-6">
+              <div className="lg:max-w-[15ch]">
+                <p className="text-[clamp(1.15rem,2.1vw,1.6rem)] font-extrabold uppercase leading-[1.12] tracking-[-0.01em]">
+                  {HERO.headline.lead}
+                </p>
 
-              <h1 className="text-[clamp(2.3rem,6vw,3.4rem)] font-extrabold leading-[1.02] tracking-[-0.035em]">
-                {HERO.headline.lead}
-                <br />
-                <span className="text-accent-2">{HERO.headline.highlight}</span>
+                <ul className="mt-5 flex flex-col gap-2">
+                  {HERO.facts.map((fact) => (
+                    <li
+                      key={fact}
+                      className="flex items-center gap-2 text-[0.78rem] font-medium text-text-dim"
+                    >
+                      <span
+                        aria-hidden
+                        className="h-1.5 w-1.5 flex-none rounded-full bg-accent-2"
+                      />
+                      {fact}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* coluna central: espaço da figura no desktop */}
+              <div aria-hidden className="hidden lg:block" />
+
+              <div className="lg:ml-auto lg:max-w-[26ch] lg:pt-1">
+                <p className="max-w-[34ch] text-[0.92rem] leading-[1.6] text-text-dim">
+                  Pentatônica, modos gregos e reharmonização{' '}
+                  <strong className="font-semibold text-text">
+                    aplicados no braço
+                  </strong>
+                  , na ordem certa, até você improvisar com intenção.
+                </p>
+
+                <Link
+                  href="#metodo"
+                  className="mt-4 inline-block text-[0.88rem] font-medium text-text underline underline-offset-4 transition-colors hover:text-accent-2"
+                >
+                  O que você vai aprender?
+                </Link>
+              </div>
+            </div>
+
+            {/* ---- a figura ---- */}
+            {images.hero ? (
+              <HeroPortrait
+                src={images.hero}
+                cutout={images.heroIsCutout}
+                alt={TEACHER.name}
+                // A figura precisa caber ENTRE os dois blocos de texto: com
+                // largura total, o braço da guitarra invadia a coluna da
+                // direita e comia a primeira palavra do parágrafo.
+                className="mx-auto mt-6 aspect-square w-[min(78%,340px)] lg:absolute lg:bottom-0 lg:left-1/2 lg:top-[140px] lg:mt-0 lg:aspect-auto lg:w-[min(620px,46%)] lg:-translate-x-1/2"
+              />
+            ) : (
+              // sem figura, o miolo não pode colapsar e grudar a headline no topo
+              <div aria-hidden className="min-h-[clamp(40px,10vw,150px)]" />
+            )}
+
+            {/* empurra a headline pro rodapé do hero no desktop */}
+            <div aria-hidden className="hidden flex-1 lg:block" />
+
+            {/* ---- headline gigante + botões, por cima da figura ---- */}
+            <div className="relative z-20 mt-10 pb-10 lg:mt-0 lg:pb-14">
+              <h1 className="text-[clamp(2.4rem,9.5vw,7rem)] font-extrabold uppercase leading-[0.88] tracking-[-0.045em] [text-shadow:0_10px_40px_rgba(0,0,0,0.55)]">
+                {HERO.headline.highlight}
               </h1>
 
-              {/* os dois parágrafos ficam aqui, e não no config, por causa do
-                  <strong> no meio */}
-              <p className="mt-6 max-w-[46ch] text-[clamp(1rem,1.7vw,1.15rem)] leading-[1.55] text-text">
-                Pentatônica, modos gregos e reharmonização{' '}
-                <strong className="font-semibold">aplicados no braço</strong>,
-                na ordem certa, até você improvisar com intenção.
-              </p>
-
-              <p className="mt-4 max-w-[50ch] text-[0.92rem] leading-[1.65] text-text-dim">
-                Um método em ordem, do primeiro desenho até o chorus inteiro —{' '}
-                <strong className="font-semibold text-text">
-                  mesmo que hoje você trave toda vez que o solo abre
-                </strong>
-                .
-              </p>
-
-              <Cta className="mt-9" label={HERO.ctaLabel} />
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <Cta label={HERO.ctaLabel} />
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-lg border border-white/15 bg-white/5 px-7 py-4 text-[0.82rem] font-bold uppercase tracking-[0.08em] text-text backdrop-blur-sm transition-colors hover:bg-white/12"
+                >
+                  Já sou aluno
+                </Link>
+              </div>
 
               {totals.courses > 0 ? (
-                <div className="mt-9 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/8 pt-6">
+                <div className="mt-9 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/10 pt-6">
                   <Stat
                     value={String(totals.courses)}
                     label={totals.courses === 1 ? 'Curso' : 'Cursos'}
@@ -145,14 +195,6 @@ export default async function LandingPage() {
                 </div>
               ) : null}
             </div>
-
-            {images.hero ? (
-              <HeroPortrait
-                src={images.hero}
-                cutout={images.heroIsCutout}
-                alt={TEACHER.name}
-              />
-            ) : null}
           </div>
 
           <Ticker />
@@ -180,7 +222,10 @@ export default async function LandingPage() {
             RETRATO sangrando pelas bordas com o título em caixa alta sobre a
             imagem, dots de paginação e CTA fechando a seção. */}
         {courses.length > 0 ? (
-          <section className="pb-[clamp(48px,7vw,88px)]">
+          <section
+            id="metodo"
+            className="scroll-mt-20 pb-[clamp(48px,7vw,88px)]"
+          >
             <div className={`${wrap} text-center`}>
               <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-accent-2">
                 // O método
@@ -329,26 +374,7 @@ export default async function LandingPage() {
         </section>
 
         {/* ------------------------------------------------------ oferta */}
-        <section className={`${wrap} pb-[clamp(48px,7vw,88px)]`}>
-          <div className="overflow-hidden rounded-2xl border border-white/8 bg-[radial-gradient(120%_140%_at_80%_0%,rgba(158,34,76,0.35),transparent_62%),linear-gradient(135deg,#1d1d25,#141018)] p-[clamp(28px,5vw,56px)] text-center">
-            <h2 className="text-[clamp(1.6rem,3.5vw,2.3rem)] font-extrabold leading-[1.1] tracking-[-0.02em]">
-              Comece hoje a improvisar com intenção
-            </h2>
-
-            {OFFER.priceLabel || OFFER.installmentLabel ? (
-              <p className="mt-4 text-[1.1rem] font-semibold">
-                {OFFER.installmentLabel ?? OFFER.priceLabel}
-              </p>
-            ) : null}
-
-            <p className="mx-auto mt-3 max-w-[46ch] text-[0.9rem] leading-[1.6] text-text-dim">
-              Pagamento pela Hotmart, com {OFFER.guaranteeDays} dias de
-              garantia. O acesso é liberado automaticamente após a confirmação.
-            </p>
-
-            <Cta className="mt-7" label="Quero começar agora" note />
-          </div>
-        </section>
+        <Offer totals={totals} />
 
         {/* --------------------------------------------------------- faq */}
         {/* Estilo da referência: faixa vinho ocupando a largura toda, cards
@@ -413,9 +439,7 @@ export default async function LandingPage() {
 
             {/* rodapé dentro da mesma faixa, como no print */}
             <footer className="mt-[clamp(40px,6vw,72px)] flex flex-wrap items-center gap-x-6 gap-y-4 border-t border-cream/15 pt-8 text-[0.78rem] text-cream/60">
-              <span className="font-extrabold tracking-[0.2em] text-cream">
-                {SITE_NAME}
-              </span>
+              <Logo className="text-cream" markClassName="h-8 w-8" textClassName="text-[0.95rem]" />
               <span>
                 © {new Date().getFullYear()} {TEACHER.name} — todos os direitos
                 reservados

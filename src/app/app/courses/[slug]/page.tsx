@@ -120,7 +120,9 @@ export default async function CoursePage({
                 <img
                   src={c.coverImageUrl}
                   alt=""
-                  className="h-full w-full object-cover"
+                  // absolute pelo mesmo motivo do ExploreCard: sem isso a
+                  // imagem estica o container que só tem aspect-ratio
+                  className="absolute inset-0 h-full w-full object-cover object-[center_22%]"
                 />
               ) : (
                 <span className="px-4 text-center text-[0.72rem] uppercase tracking-[0.13em] text-text-faint">

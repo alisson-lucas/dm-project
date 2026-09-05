@@ -7,6 +7,7 @@ import {
   plural,
 } from "../lib/format";
 import { LANDING_IMAGES } from "../lib/landing";
+import { isPlaceholderCover } from "../lib/covers";
 
 // Dados públicos da landing. Diferente do catálogo da área logada, aqui não
 // existe usuário nem matrícula — é só o que o visitante pode ver.
@@ -57,19 +58,6 @@ const EMPTY: Omit<LandingData, "images"> = {
 
 // Recebe o caminho SEM extensão e devolve a primeira que existir de verdade.
 // Assim o professor pode mandar png, webp ou jpg sem ninguém mexer no código.
-// A landing só mostra capa que seja ARTE DE CAPA de verdade. As capas atuais
-// do seed são thumbnails do YouTube: 16:9, com texto embutido e estética de
-// vídeo gratuito. Recortadas pros cards retrato do carrossel elas ficariam
-// picotadas no meio da palavra — e ainda por cima derrubam o valor percebido
-// do produto. Então aqui elas viram null e o card cai no tratamento de marca.
-//
-// Assim que o professor subir arte própria (qualquer URL que não seja do
-// YouTube), ela passa a aparecer sozinha, sem mexer no código.
-function salesCover(url: string | null): string | null {
-  if (!url) return null;
-  return /(^|\.)(img\.)?youtube\.com|ytimg\.com/i.test(url) ? null : url;
-}
-
 const EXTENSIONS = [".png", ".webp", ".jpg", ".jpeg"];
 
 function resolveImage(basePath: string): string | null {
@@ -115,7 +103,8 @@ export async function getLandingData(): Promise<LandingData> {
         slug: c.slug,
         title: c.title,
         description: c.description,
-        coverImageUrl: salesCover(c.coverImageUrl),
+        // null aqui de propósito: o carrossel cai na capa da marca
+        coverImageUrl: isPlaceholderCover(c.coverImageUrl) ? null : c.coverImageUrl,
         category: c.category,
         levelLabel: courseLevelLabel(c.level),
         moduleCount: c._count.modules,

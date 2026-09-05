@@ -1,48 +1,34 @@
 import Image from "next/image";
 
-// Retrato do professor sobre o círculo, como na referência.
+// Figura do professor no hero, no estilo da referência: recorte sobre um halo
+// de cor chapada que se dissolve nas bordas. Sem círculo — aquilo era da
+// referência anterior.
 //
 // `cutout` vem da extensão do arquivo (ver services/landing.ts):
-// - true  (png/webp, fundo transparente): a foto fica POR CIMA do círculo e
-//   pode estourar a borda — é o efeito do print.
-// - false (jpg): não dá pra sobrepor sem ficar um retângulo colado no círculo,
-//   então viramos um bloco arredondado e o círculo fica só de fundo, atrás.
+// - true  (png/webp, fundo transparente): a figura fica solta sobre o halo,
+//   que é o efeito do print.
+// - false (jpg): não dá pra soltar um retângulo sobre o halo sem ficar colado,
+//   então viramos um bloco arredondado e o halo fica só de brilho atrás.
 export function HeroPortrait({
   src,
   cutout,
   alt,
+  className = "",
 }: {
   src: string;
   cutout: boolean;
   alt: string;
+  /** o tamanho e o posicionamento vêm de quem usa */
+  className?: string;
 }) {
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[520px]">
-      {/* brilho difuso atrás de tudo */}
+    <div className={`relative ${className}`}>
+      {/* Halo: chapado no miolo e dissolvendo pra fora. É o meio-termo entre o
+          bloco de cor sólida da referência e o fundo escuro do resto da página. */}
       <div
         aria-hidden
-        className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(158,34,76,0.35),transparent_65%)] blur-2xl"
+        className="absolute left-1/2 top-[4%] h-[88%] w-[min(112%,680px)] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,var(--color-accent)_0%,var(--color-accent)_46%,rgba(158,34,76,0.58)_72%,rgba(158,34,76,0.12)_90%,transparent_100%)]"
       />
-
-      {/* O círculo só faz sentido com o recorte por cima dele. Com foto
-          retangular ele ficaria escondido atrás do bloco, aparecendo só nos
-          cantos — pior que não ter. */}
-      {cutout ? (
-        <svg
-          aria-hidden
-          viewBox="0 0 100 100"
-          className="absolute inset-0 h-full w-full"
-        >
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="var(--color-accent-2)"
-            strokeWidth="1.1"
-          />
-        </svg>
-      ) : null}
 
       {cutout ? (
         <Image
@@ -50,20 +36,19 @@ export function HeroPortrait({
           alt={alt}
           fill
           priority
-          sizes="(max-width: 1024px) 90vw, 45vw"
-          // object-bottom + scale deixa a figura "saindo" do círculo por
-          // baixo, como no print, sem cortar a cabeça. A máscara evita que a
-          // base do recorte termine num corte reto duro boiando no escuro.
-          className="scale-[1.12] object-contain object-bottom [mask-image:linear-gradient(to_bottom,#000_88%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_88%,transparent_100%)]"
+          sizes="(max-width: 1024px) 78vw, 620px"
+          // object-bottom mantém a figura apoiada na base; a máscara evita que
+          // o recorte termine num corte reto duro boiando no escuro.
+          className="object-contain object-bottom [mask-image:linear-gradient(to_bottom,#000_88%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_88%,transparent_100%)]"
         />
       ) : (
-        <div className="absolute inset-[9%] overflow-hidden rounded-2xl border border-white/8">
+        <div className="absolute inset-x-[10%] bottom-0 top-[8%] overflow-hidden rounded-2xl border border-white/10">
           <Image
             src={src}
             alt={alt}
             fill
             priority
-            sizes="(max-width: 1024px) 90vw, 45vw"
+            sizes="(max-width: 1024px) 78vw, 620px"
             className="object-cover"
           />
         </div>
