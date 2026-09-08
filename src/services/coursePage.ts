@@ -8,12 +8,16 @@ import {
   formatDurationCompact,
 } from "../lib/format";
 
-// View model da página /courses/[slug]. Assim como a home, todo o progresso sai
-// do ponteiro `Enrollment.lastLessonId` — não há progresso por segundo.
+// View model da página /app/courses/[slug]. Ela tem dois modos:
+//
+// - "enrolled": o aluno comprou o curso. Mostra progresso (derivado do ponteiro
+//   `Enrollment.lastLessonId`) e o botão de assistir/continuar.
+// - "preview": o aluno NÃO tem o curso. Mesma tela de apresentação (módulos,
+//   aulas, duração), mas sem progresso, aulas não clicáveis e um botão
+//   "Comprar curso" que leva pro checkout da Hotmart.
 
-// Dentro de um curso matriculado nada é bloqueado, então só existem três
-// estados: já passou, é a atual, ainda vem.
 export type ProgressStatus = "done" | "current" | "next";
+export type CourseAccess = "enrolled" | "preview";
 
 export interface CoursePageLesson {
   id: string;
@@ -39,6 +43,8 @@ export interface CoursePageData {
   coverImageUrl: string | null;
   category: string | null;
   levelLabel: string | null;
+  /** link de checkout da Hotmart (botão "Comprar curso" no modo preview) */
+  checkoutUrl: string | null;
   // Não há professor por curso: a plataforma é de um professor só, e os dados
   // dele saem de src/lib/site.ts (TEACHER) direto na página.
   stats: {
@@ -48,7 +54,7 @@ export interface CoursePageData {
     moduleCount: number;
   };
   percent: number;
-  /** null quando o curso ainda não tem nenhuma aula cadastrada */
+  /** null no modo preview e quando o curso ainda não tem nenhuma aula */
   currentLesson: { id: string; number: number } | null;
   /** true quando o aluno ainda não abriu nenhuma aula deste curso */
   fresh: boolean;
@@ -56,9 +62,8 @@ export interface CoursePageData {
 }
 
 export type CoursePageResult =
-  | { status: "ok"; data: CoursePageData }
-  | { status: "not-found" }
-  | { status: "forbidden" };
+  | { status: "ok"; access: CourseAccess; data: CoursePageData }
+  | { status: "not-found" };
 
 export async function getCoursePageForUser(
   userId: string,
@@ -80,19 +85,19 @@ export async function getCoursePageForUser(
     where: { userId_courseId: { userId, courseId: course.id } },
   });
 
-  if (!enrollment || enrollment.status !== EnrollmentStatus.ACTIVE) {
-    return { status: "forbidden" };
-  }
+  const enrolled = enrollment?.status === EnrollmentStatus.ACTIVE;
 
   const flat = course.modules.flatMap((m) =>
     m.lessons.map((lesson) => ({ lesson, moduleId: m.id }))
   );
 
-  // Se a última aula vista sumiu (ou nunca houve), recomeça da primeira.
-  const found = enrollment.lastLessonId
-    ? flat.findIndex((f) => f.lesson.id === enrollment.lastLessonId)
-    : -1;
-  const index = flat.length === 0 ? -1 : found >= 0 ? found : 0;
+  // No modo preview não há progresso: index = -1 zera tudo (nenhuma aula
+  // "done"/"current", 0% concluído, sem "continuar").
+  const found =
+    enrolled && enrollment?.lastLessonId
+      ? flat.findIndex((f) => f.lesson.id === enrollment.lastLessonId)
+      : -1;
+  const index = enrolled && flat.length > 0 ? (found >= 0 ? found : 0) : -1;
 
   const currentModuleIndex =
     index >= 0
@@ -133,6 +138,7 @@ export async function getCoursePageForUser(
 
   return {
     status: "ok",
+    access: enrolled ? "enrolled" : "preview",
     data: {
       slug: course.slug,
       title: course.title,
@@ -140,6 +146,7 @@ export async function getCoursePageForUser(
       coverImageUrl: courseCover(course.coverImageUrl),
       category: course.category,
       levelLabel: courseLevelLabel(course.level),
+      checkoutUrl: course.checkoutUrl,
       stats: {
         lessonTotal: flat.length,
         durationLabel: formatDurationCompact(

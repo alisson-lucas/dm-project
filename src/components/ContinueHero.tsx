@@ -3,12 +3,15 @@ import type { ContinueWatching } from "../services/home";
 import {
   btnGhost,
   btnPrimary,
-  heroActions,
-  heroBg,
-  heroContent,
-  heroKicker,
-  heroMeta,
-  heroTitle,
+  featureActions,
+  featureBg,
+  featureCard,
+  featureContent,
+  featureImg,
+  featureKicker,
+  featureMeta,
+  featureScrim,
+  featureTitle,
 } from "../lib/ui";
 
 export function ContinueHero({ data }: { data: ContinueWatching }) {
@@ -21,24 +24,23 @@ export function ContinueHero({ data }: { data: ContinueWatching }) {
     .join(" · ");
 
   return (
-    <section className="relative flex min-h-[min(74vh,620px)] items-end overflow-hidden">
-      <div
-        className={heroBg}
-        aria-hidden
-        style={
-          data.coverImageUrl
-            ? { backgroundImage: `url(${data.coverImageUrl})` }
-            : undefined
-        }
-      />
-      <div className={`${heroContent} pb-[clamp(36px,7vw,88px)]`}>
-        <p className={heroKicker}>
+    <section className={featureCard}>
+      <div className={featureBg} aria-hidden>
+        {data.coverImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={data.coverImageUrl} alt="" className={featureImg} />
+        ) : null}
+      </div>
+      <div className={featureScrim} aria-hidden />
+
+      <div className={featureContent}>
+        <p className={featureKicker}>
           {data.fresh ? "Comece por aqui" : "Continue de onde parou"}
         </p>
-        <h1 className={heroTitle}>{data.lessonTitle}</h1>
-        <p className={heroMeta}>{meta}</p>
+        <h1 className={featureTitle}>{data.lessonTitle}</h1>
+        <p className={featureMeta}>{meta}</p>
 
-        <div className={heroActions}>
+        <div className={featureActions}>
           <Link href={`/app/lessons/${data.lessonId}`} className={btnPrimary}>
             ▶ {data.fresh ? "Começar aula" : "Retomar aula"}
           </Link>
@@ -48,7 +50,7 @@ export function ContinueHero({ data }: { data: ContinueWatching }) {
         </div>
 
         <div
-          className="mt-6 h-[3px] w-[min(340px,100%)] overflow-hidden rounded-full bg-white/12"
+          className="mt-5 h-[3px] w-[min(340px,100%)] overflow-hidden rounded-full bg-white/12"
           role="progressbar"
           aria-valuenow={data.percent}
           aria-valuemin={0}

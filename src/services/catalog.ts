@@ -1,46 +1,68 @@
 import { EnrollmentStatus } from "@prisma/client";
+import type { Course, CourseLevel } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { courseCover } from "../lib/covers";
 
-// Catálogo da tela inicial (/): TODOS os cursos existentes, cada um marcado com
-// `enrolled` (se o usuário tem matrícula ATIVA nele). A lista "enrolled" é só um
-// atalho pra seção "Seus cursos".
-export async function getCatalog(userId: string) {
-  const [courses, activeEnrollments] = await Promise.all([
-    prisma.course.findMany({
-      orderBy: { createdAt: "asc" },
-      include: {
-        _count: { select: { modules: true } },
-        // as durações vêm junto pra o card mostrar "14 aulas · 3h20"
-        modules: { select: { lessons: { select: { durationSeconds: true } } } },
-      },
-    }),
-    prisma.enrollment.findMany({
-      where: { userId, status: EnrollmentStatus.ACTIVE },
-      select: { courseId: true },
-    }),
-  ]);
+type CourseWithCounts = Course & {
+  _count: { modules: number };
+  modules: { lessons: { durationSeconds: number | null }[] }[];
+};
 
-  const enrolledIds = new Set(activeEnrollments.map((e) => e.courseId));
+const courseInclude = {
+  _count: { select: { modules: true } },
+  // durações vêm junto pra o card mostrar "14 aulas · 3h20"
+  modules: { select: { lessons: { select: { durationSeconds: true } } } },
+} as const;
 
-  const all = courses.map((c) => ({
+function toCard(c: CourseWithCounts, enrolled: boolean) {
+  return {
     id: c.id,
     slug: c.slug,
     title: c.title,
     description: c.description,
     coverImageUrl: courseCover(c.coverImageUrl),
     category: c.category,
-    level: c.level,
+    level: c.level as CourseLevel | null,
+    checkoutUrl: c.checkoutUrl,
     moduleCount: c._count.modules,
     lessonCount: c.modules.reduce((n, m) => n + m.lessons.length, 0),
     durationSeconds: c.modules.reduce(
       (n, m) => n + m.lessons.reduce((s, l) => s + (l.durationSeconds ?? 0), 0),
       0
     ),
-    enrolled: enrolledIds.has(c.id),
-  }));
+    enrolled,
+  };
+}
 
-  return { all, enrolled: all.filter((c) => c.enrolled) };
+// TODOS os cursos existentes, cada um marcado com `enrolled` (matrícula ATIVA
+// do usuário). Usado em /app/explorar — a descoberta acontece dentro da
+// plataforma, mas o acesso ao conteúdo continua exigindo compra.
+export async function getCatalog(userId: string) {
+  const [courses, active] = await Promise.all([
+    prisma.course.findMany({ orderBy: { createdAt: "asc" }, include: courseInclude }),
+    prisma.enrollment.findMany({
+      where: { userId, status: EnrollmentStatus.ACTIVE },
+      select: { courseId: true },
+    }),
+  ]);
+
+  const enrolledIds = new Set(active.map((e) => e.courseId));
+  return { all: courses.map((c) => toCard(c, enrolledIds.has(c.id))) };
+}
+
+// Só os cursos comprados (matrícula ATIVA), ordenados pelo assistido mais
+// recentemente (quem nunca abriu vai pro fim). Usado na home /app.
+export async function getMyCourses(userId: string) {
+  const enrollments = await prisma.enrollment.findMany({
+    where: { userId, status: EnrollmentStatus.ACTIVE },
+    orderBy: [
+      { lastWatchedAt: { sort: "desc", nulls: "last" } },
+      { grantedAt: "desc" },
+    ],
+    include: { course: { include: courseInclude } },
+  });
+
+  return enrollments.map((e) => toCard(e.course, true));
 }
 
 export type CatalogCourse = Awaited<ReturnType<typeof getCatalog>>["all"][number];

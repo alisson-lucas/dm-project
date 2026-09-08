@@ -13,21 +13,28 @@ export const btnGhost =
   `${btnBase} bg-white/10 text-text border-white/8 ` +
   "[&:not(:disabled):hover]:bg-white/18";
 
-// Fundo do hero: gradiente radial + vertical, com um scrim no ::after.
-export const heroBg =
-  "absolute inset-0 bg-cover bg-[center_20%] " +
-  "bg-[radial-gradient(120%_80%_at_80%_0%,rgba(158,34,76,0.4),transparent_60%),linear-gradient(180deg,#1a1016,#0b0b0f)] " +
-  "after:content-[''] after:absolute after:inset-0 " +
-  "after:bg-[linear-gradient(180deg,rgba(11,11,15,0.15)_0%,rgba(11,11,15,0.6)_68%,#0b0b0f_100%),linear-gradient(90deg,rgba(11,11,15,0.88)_0%,rgba(11,11,15,0.35)_45%,transparent_78%)]";
-
-export const heroKicker =
-  "mb-2.5 text-[0.78rem] tracking-[0.16em] uppercase text-accent-2 font-bold";
-export const heroTitle =
-  "mb-3.5 text-[clamp(2rem,5.5vw,3.6rem)] font-extrabold leading-[1.05] max-w-[16ch]";
-export const heroMeta = "mb-5.5 text-[0.85rem] text-text-faint";
-export const heroContent =
-  "relative z-2 w-full max-w-page mx-auto px-[clamp(16px,4vw,48px)]";
-export const heroActions = "flex gap-3 flex-wrap";
+// Cartão de destaque: capa esmaecida ao fundo, gradiente puxando pra esquerda
+// e conteúdo ancorado embaixo. Usado no destaque do /explorar e no "continue de
+// onde parou" da home — os dois devem continuar idênticos, então mexer aqui
+// muda os dois.
+export const featureCard =
+  "relative overflow-hidden rounded-2xl border border-white/8";
+export const featureBg =
+  "absolute inset-0 bg-[radial-gradient(120%_120%_at_85%_0%,rgba(158,34,76,0.4),transparent_60%),linear-gradient(135deg,#2a1a22,#141018)]";
+export const featureImg =
+  "absolute inset-0 h-full w-full object-cover object-[center_28%] opacity-40";
+export const featureScrim =
+  "absolute inset-0 bg-[linear-gradient(90deg,var(--color-bg)_6%,rgba(11,11,15,0.35)_55%,transparent_85%)]";
+// min-h em vez de aspect-ratio: o "continue de onde parou" carrega meta, dois
+// botões e a barra de progresso, e estourava o cartão em telas estreitas.
+export const featureContent =
+  "relative flex min-h-[clamp(300px,32vw,470px)] max-w-[520px] flex-col justify-end p-[clamp(20px,4vw,44px)]";
+export const featureKicker =
+  "mb-2.5 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-accent-2";
+export const featureTitle =
+  "text-[clamp(1.8rem,4vw,2.6rem)] font-extrabold leading-[1.05]";
+export const featureMeta = "mt-2.5 text-[0.85rem] text-text-faint";
+export const featureActions = "mt-4 flex flex-wrap gap-3";
 
 // Wrapper padrão de largura das seções.
 export const rowWrap =
