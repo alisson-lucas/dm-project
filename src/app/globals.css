@@ -63,3 +63,21 @@
     outline-offset: 2px;
   }
 }
+
+/* ---------- estado inicial das animações de entrada (GSAP) ---------- */
+/* Os blocos marcados na landing entram com o GSAP (components/landing/
+   Reveal.tsx e HeroStage.tsx). Eles nascem invisíveis aqui, no CSS, e não no
+   JavaScript: se nascessem à vista, o visitante veria o conteúdo por um
+   instante e ele pularia pro estado inicial da animação assim que o React
+   hidratasse a página.
+
+   Dois escapes, pra que ninguém fique com a página em branco:
+   - quem pediu menos movimento no sistema não casa com esta media query (e
+     nem com o matchMedia dos componentes): recebe tudo parado e visível;
+   - sem JavaScript, o <noscript> do layout devolve a opacidade. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal],
+  [data-hero] {
+    opacity: 0;
+  }
+}

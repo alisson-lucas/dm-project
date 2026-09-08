@@ -18,7 +18,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        {/* Sem JavaScript o GSAP nunca revela os blocos de entrada da landing
+            (ver globals.css) — este reset devolve todos eles à vista. */}
+        <noscript>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: "[data-reveal],[data-hero]{opacity:1 !important}",
+            }}
+          />
+        </noscript>
+        {children}
+      </body>
     </html>
   );
 }

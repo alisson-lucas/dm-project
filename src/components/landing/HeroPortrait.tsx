@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { ComponentPropsWithoutRef } from "react";
 
 // Figura do professor no hero, no estilo da referência: recorte sobre um halo
 // de cor chapada que se dissolve nas bordas. Sem círculo — aquilo era da
@@ -14,15 +15,18 @@ export function HeroPortrait({
   cutout,
   alt,
   className = "",
+  ...rest
 }: {
   src: string;
   cutout: boolean;
   alt: string;
   /** o tamanho e o posicionamento vêm de quem usa */
   className?: string;
-}) {
+  // o resto (na prática, o data-hero que a animação do hero procura) vai
+  // direto pra raiz — é ela que o GSAP move, não a imagem
+} & ComponentPropsWithoutRef<"div">) {
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} {...rest}>
       {/* Halo: chapado no miolo e dissolvendo pra fora. É o meio-termo entre o
           bloco de cor sólida da referência e o fundo escuro do resto da página. */}
       <div

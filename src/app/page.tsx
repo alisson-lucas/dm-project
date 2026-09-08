@@ -11,6 +11,10 @@ import { Ticker } from '@/components/landing/Ticker'
 import { CourseCarousel } from '@/components/landing/CourseCarousel'
 import { Offer } from '@/components/landing/Offer'
 import { HeroPortrait } from '@/components/landing/HeroPortrait'
+import { HeroStage } from '@/components/landing/HeroStage'
+import { Reveal } from '@/components/landing/Reveal'
+import { Parallax } from '@/components/landing/Parallax'
+import { CountUp } from '@/components/landing/CountUp'
 import { SITE_NAME, TEACHER } from '@/lib/site'
 import {
   BENEFITS,
@@ -100,12 +104,15 @@ export default async function LandingPage() {
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:25%_100%] [mask-image:linear-gradient(to_bottom,transparent,#000_16%,#000_84%,transparent)]" />
           </div>
 
-          <div
+          {/* HeroStage é só a casca cliente da animação de entrada: ela acha
+              os alvos abaixo pelo data-hero e roda a linha do tempo. O
+              conteúdo continua renderizado no servidor. */}
+          <HeroStage
             className={`${wrap} relative z-10 flex flex-1 flex-col pt-28 lg:pt-32`}
           >
             {/* ---- linha de cima: textos flanqueando a figura ---- */}
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-6">
-              <div className="lg:max-w-[15ch]">
+              <div data-hero="side" className="lg:max-w-[15ch]">
                 <p className="text-[clamp(1.15rem,2.1vw,1.6rem)] font-extrabold uppercase leading-[1.12] tracking-[-0.01em]">
                   {HERO.headline.lead}
                 </p>
@@ -129,7 +136,10 @@ export default async function LandingPage() {
               {/* coluna central: espaço da figura no desktop */}
               <div aria-hidden className="hidden lg:block" />
 
-              <div className="lg:ml-auto lg:max-w-[26ch] lg:pt-1">
+              <div
+                data-hero="side"
+                className="lg:ml-auto lg:max-w-[26ch] lg:pt-1"
+              >
                 <p className="max-w-[34ch] text-[0.92rem] leading-[1.6] text-text-dim">
                   Pentatônica, modos gregos e reharmonização{' '}
                   <strong className="font-semibold text-text">
@@ -150,6 +160,7 @@ export default async function LandingPage() {
             {/* ---- a figura ---- */}
             {images.hero ? (
               <HeroPortrait
+                data-hero="figure"
                 src={images.hero}
                 cutout={images.heroIsCutout}
                 alt={TEACHER.name}
@@ -168,11 +179,17 @@ export default async function LandingPage() {
 
             {/* ---- headline gigante + botões, por cima da figura ---- */}
             <div className="relative z-20 mt-10 pb-10 lg:mt-0 lg:pb-14">
-              <h1 className="text-[clamp(2.4rem,9.5vw,7rem)] font-extrabold uppercase leading-[0.88] tracking-[-0.045em] [text-shadow:0_10px_40px_rgba(0,0,0,0.55)]">
+              <h1
+                data-hero="title"
+                className="text-[clamp(2.4rem,9.5vw,7rem)] font-extrabold uppercase leading-[0.88] tracking-[-0.045em] [text-shadow:0_10px_40px_rgba(0,0,0,0.55)]"
+              >
                 {HERO.headline.highlight}
               </h1>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              <div
+                data-hero="actions"
+                className="mt-8 flex flex-wrap items-center gap-3"
+              >
                 <Cta label={HERO.ctaLabel} />
                 <Link
                   href="/login"
@@ -183,7 +200,10 @@ export default async function LandingPage() {
               </div>
 
               {totals.courses > 0 ? (
-                <div className="mt-9 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/10 pt-6">
+                <div
+                  data-hero="stats"
+                  className="mt-9 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/10 pt-6"
+                >
                   <Stat
                     value={String(totals.courses)}
                     label={totals.courses === 1 ? 'Curso' : 'Cursos'}
@@ -195,14 +215,14 @@ export default async function LandingPage() {
                 </div>
               ) : null}
             </div>
-          </div>
+          </HeroStage>
 
           <Ticker />
         </section>
 
         {/* ---------------------------------------------------- benefícios */}
         <section className={`${wrap} py-[clamp(48px,7vw,88px)]`}>
-          <div className="grid gap-5 md:grid-cols-3">
+          <Reveal stagger className="grid gap-5 md:grid-cols-3">
             {BENEFITS.map((b) => (
               <div
                 key={b.title}
@@ -214,7 +234,7 @@ export default async function LandingPage() {
                 </p>
               </div>
             ))}
-          </div>
+          </Reveal>
         </section>
 
         {/* ------------------------------------------ o que você vai ver */}
@@ -226,7 +246,7 @@ export default async function LandingPage() {
             id="metodo"
             className="scroll-mt-20 pb-[clamp(48px,7vw,88px)]"
           >
-            <div className={`${wrap} text-center`}>
+            <Reveal stagger className={`${wrap} text-center`}>
               <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-accent-2">
                 // O método
               </p>
@@ -240,27 +260,30 @@ export default async function LandingPage() {
                 conteúdo, numa sequência que leva do desenho básico ao improviso
                 sobre a progressão inteira.
               </p>
-            </div>
+            </Reveal>
 
-            <div className="mt-9">
+            {/* a fita sangra pelas bordas, então ela entra por escala e não
+                por deslocamento lateral — empurrar de lado brigaria com o
+                scroll horizontal do próprio carrossel */}
+            <Reveal from="scale" className="mt-9">
               <CourseCarousel
                 courses={courses}
                 fallbackCover={images.courseCover}
               />
-            </div>
+            </Reveal>
 
-            <div className={`${wrap} mt-9 flex justify-center`}>
+            <Reveal className={`${wrap} mt-9 flex justify-center`}>
               <Cta label={HERO.ctaLabel} />
-            </div>
+            </Reveal>
           </section>
         ) : null}
 
         {/* ------------------------------------------------- depoimento */}
-        <section className="border-y border-white/8 bg-bg-2 py-[clamp(48px,7vw,88px)]">
+        <section className="overflow-hidden border-y border-white/8 bg-bg-2 py-[clamp(48px,7vw,88px)]">
           <div
             className={`${wrap} grid items-center gap-[clamp(28px,4vw,52px)] lg:grid-cols-[1fr_1fr]`}
           >
-            <div>
+            <Reveal from="left">
               <p className="mb-3 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-accent-2">
                 Aluno da casa
               </p>
@@ -270,12 +293,14 @@ export default async function LandingPage() {
               <p className="mt-3 max-w-[46ch] text-[0.92rem] leading-[1.6] text-text-dim">
                 {TESTIMONIAL.quote}
               </p>
-            </div>
+            </Reveal>
 
-            <VideoFacade
-              videoId={TESTIMONIAL.videoId}
-              title={TESTIMONIAL.title}
-            />
+            <Reveal from="right">
+              <VideoFacade
+                videoId={TESTIMONIAL.videoId}
+                title={TESTIMONIAL.title}
+              />
+            </Reveal>
           </div>
         </section>
 
@@ -300,7 +325,8 @@ export default async function LandingPage() {
             >
               {/* o bloco sólido — no mobile sangra até as bordas da tela e o
                   texto centraliza, como no print */}
-              <div
+              <Reveal
+                from="left"
                 className={`relative z-10 order-2 -mx-[clamp(16px,4vw,48px)] bg-accent px-[clamp(24px,6vw,48px)] py-[clamp(36px,7vw,56px)] text-center lg:order-1 lg:mx-0 lg:rounded-2xl lg:text-left ${
                   images.about ? 'lg:pr-[clamp(64px,9vw,132px)]' : ''
                 }`}
@@ -324,9 +350,10 @@ export default async function LandingPage() {
                         key={stat.label}
                         className="text-center lg:text-left"
                       >
-                        <div className="text-[clamp(2.6rem,11vw,3.4rem)] font-extrabold leading-[0.9] tracking-[-0.03em] text-white">
-                          {stat.value}
-                        </div>
+                        <CountUp
+                          value={stat.value}
+                          className="block text-[clamp(2.6rem,11vw,3.4rem)] font-extrabold tabular-nums leading-[0.9] tracking-[-0.03em] text-white"
+                        />
                         <div className="mx-auto mt-2 max-w-[18ch] text-[0.76rem] leading-[1.4] text-white/70 lg:mx-0">
                           {stat.label}
                         </div>
@@ -339,17 +366,24 @@ export default async function LandingPage() {
                     quem está decidindo a compra pra fora da página é vazamento
                     de conversão. A seção fecha com o botão. */}
                 <Cta className="mt-9" label={HERO.ctaLabel} variant="light" />
-              </div>
+              </Reveal>
 
               {/* a foto, com as palavras gigantes penduradas nela */}
               {images.about ? (
-                <div className="relative order-1 lg:order-2 lg:-ml-[clamp(40px,7vw,112px)]">
-                  <span
-                    aria-hidden
+                <Reveal
+                  from="right"
+                  className="relative order-1 lg:order-2 lg:-ml-[clamp(40px,7vw,112px)]"
+                >
+                  {/* As duas palavras gigantes andam com o scroll, mais que a
+                      foto: é o que dá a sensação de profundidade entre elas e
+                      o card. Decorativas — o nome da marca já está no logo. */}
+                  <Parallax
+                    hidden
+                    distance={18}
                     className="pointer-events-none absolute bottom-full right-0 z-0 translate-y-[0.2em] select-none text-[clamp(3.5rem,15vw,11rem)] font-extrabold uppercase leading-[0.78] tracking-[-0.05em] text-white/[0.05]"
                   >
                     {BRAND_TOP}
-                  </span>
+                  </Parallax>
 
                   <div className="relative z-10 aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-[0_44px_90px_-32px_rgba(0,0,0,0.9)]">
                     <Image
@@ -361,20 +395,23 @@ export default async function LandingPage() {
                     />
                   </div>
 
-                  <span
-                    aria-hidden
+                  <Parallax
+                    hidden
+                    distance={18}
                     className="pointer-events-none absolute right-0 top-full z-0 translate-y-[0.08em] select-none text-[clamp(3rem,13vw,8.5rem)] font-extrabold uppercase leading-[0.78] tracking-[-0.05em] text-accent/35"
                   >
                     {BRAND_BOTTOM}
-                  </span>
-                </div>
+                  </Parallax>
+                </Reveal>
               ) : null}
             </div>
           </div>
         </section>
 
         {/* ------------------------------------------------------ oferta */}
-        <Offer totals={totals} />
+        <Reveal from="scale">
+          <Offer totals={totals} />
+        </Reveal>
 
         {/* --------------------------------------------------------- faq */}
         {/* Estilo da referência: faixa vinho ocupando a largura toda, cards
@@ -385,16 +422,19 @@ export default async function LandingPage() {
             JavaScript, e o estado aberto/fechado do botão sai do group-open. */}
         <section className="bg-accent-deep py-[clamp(56px,8vw,104px)]">
           <div className={wrap}>
-            <div className="text-center">
+            <Reveal stagger className="text-center">
               <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-cream/60">
                 // FAQ
               </p>
               <h2 className="mt-3 text-[clamp(1.7rem,4vw,2.4rem)] font-extrabold leading-[1.08] tracking-[-0.025em] text-cream">
                 Perguntas frequentes
               </h2>
-            </div>
+            </Reveal>
 
-            <div className="mx-auto mt-10 flex max-w-[840px] flex-col gap-3.5">
+            <Reveal
+              stagger
+              className="mx-auto mt-10 flex max-w-[840px] flex-col gap-3.5"
+            >
               {FAQ.map((item) => (
                 <details
                   key={item.q}
@@ -435,7 +475,7 @@ export default async function LandingPage() {
                   </p>
                 </details>
               ))}
-            </div>
+            </Reveal>
 
             {/* rodapé dentro da mesma faixa, como no print */}
             <footer className="mt-[clamp(40px,6vw,72px)] flex flex-wrap items-center gap-x-6 gap-y-4 border-t border-cream/15 pt-8 text-[0.78rem] text-cream/60">
