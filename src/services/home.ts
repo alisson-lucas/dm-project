@@ -2,7 +2,7 @@ import { EnrollmentStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { courseCover } from "../lib/covers";
 import { formatDuration } from "../lib/format";
-import { getCatalog, type CatalogCourse } from "./catalog";
+import { getCatalog, getMyCourses } from "./catalog";
 
 // Dados da tela inicial. Tudo derivado do ponteiro `Enrollment.lastLessonId`
 // (gravado pela página da aula) — não existe progresso por segundo assistido.
@@ -107,41 +107,28 @@ async function getContinueWatching(
   };
 }
 
-export interface CategoryRow {
-  category: string;
-  title: string;
-  items: CatalogCourse[];
-}
-
 export async function getHome(userId: string) {
-  const [{ all }, continueWatching] = await Promise.all([
+  // `myCourses` vem de getMyCourses (e não de filtrar o catálogo) porque a
+  // ordem importa: o assistido mais recentemente primeiro.
+  const [myCourses, { all }, continueWatching] = await Promise.all([
+    getMyCourses(userId),
     getCatalog(userId),
     getContinueWatching(userId),
   ]);
 
-  // "Recomendado para você": o que o aluno ainda não tem. Se já tem tudo,
-  // mostra o catálogo inteiro em vez de uma fileira vazia.
-  const notEnrolled = all.filter((c) => !c.enrolled);
-  const recommended = (notEnrolled.length ? notEnrolled : all).slice(0, 8);
-
+  // Recomendados = o que o aluno ainda não tem. Abrem a fileira os do mesmo
+  // estilo do curso em andamento; o clique cai na tela de apresentação, que
+  // mostra o botão de comprar. `sort` é estável, então dentro de cada grupo a
+  // ordem do catálogo é preservada.
   const heroCategory = continueWatching?.courseCategory ?? null;
-  const categories = [
-    ...new Set(all.map((c) => c.category).filter((c): c is string => !!c)),
-  ].sort((a, b) => {
-    // o estilo do curso em andamento abre a lista
-    if (a === heroCategory) return -1;
-    if (b === heroCategory) return 1;
-    return a.localeCompare(b, "pt-BR");
-  });
+  const recommended = all
+    .filter((c) => !c.enrolled)
+    .sort(
+      (a, b) =>
+        Number(a.category !== heroCategory) -
+        Number(b.category !== heroCategory)
+    )
+    .slice(0, 8);
 
-  const categoryRows: CategoryRow[] = categories.map((category) => ({
-    category,
-    title:
-      category === heroCategory
-        ? `Populares em ${category}`
-        : `Continue explorando ${category}`,
-    items: all.filter((c) => c.category === category),
-  }));
-
-  return { all, continueWatching, recommended, categoryRows };
+  return { myCourses, recommended, continueWatching };
 }

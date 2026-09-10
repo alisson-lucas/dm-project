@@ -20,10 +20,19 @@ const DOT: Record<ProgressStatus, string> = {
   next: "border-white/20",
 };
 
-export function CourseContents({ modules }: { modules: CoursePageModule[] }) {
-  // abre no módulo em andamento; clicar de novo no mesmo fecha
+export function CourseContents({
+  modules,
+  locked = false,
+}: {
+  modules: CoursePageModule[];
+  // modo preview: aulas listadas mas não clicáveis (o aluno não comprou)
+  locked?: boolean;
+}) {
+  // abre no módulo em andamento; no preview (nenhum "current") abre o primeiro.
   const [openId, setOpenId] = useState<string | null>(
-    () => modules.find((m) => m.status === "current")?.id ?? null
+    () =>
+      modules.find((m) => m.status === "current")?.id ??
+      (locked ? (modules[0]?.id ?? null) : null)
   );
 
   return (
@@ -71,30 +80,48 @@ export function CourseContents({ modules }: { modules: CoursePageModule[] }) {
 
             {open ? (
               <div className="flex flex-col">
-                {m.lessons.map((l) => (
-                  <Link
-                    key={l.id}
-                    href={`/app/lessons/${l.id}`}
-                    aria-current={l.status === "current"}
-                    className="flex items-center gap-3.5 border-t border-white/8 py-3 pl-[22px] pr-5 transition-colors hover:bg-surface-2"
-                  >
-                    <span
-                      className={`h-[15px] w-[15px] flex-none rounded-full border-[1.5px] ${DOT[l.status]}`}
-                    />
-                    <span
-                      className={`flex-1 text-[0.84rem] ${
-                        l.status === "done" ? "text-text-dim" : "text-text"
-                      }`}
-                    >
-                      {l.title}
-                    </span>
-                    {l.durationLabel ? (
-                      <span className="flex-none text-[0.7rem] tabular-nums text-text-faint">
-                        {l.durationLabel}
+                {m.lessons.map((l) => {
+                  const inner = (
+                    <>
+                      <span
+                        className={`h-[15px] w-[15px] flex-none rounded-full border-[1.5px] ${
+                          locked ? "border-white/20" : DOT[l.status]
+                        }`}
+                      />
+                      <span
+                        className={`flex-1 text-[0.84rem] ${
+                          !locked && l.status === "done"
+                            ? "text-text-dim"
+                            : "text-text"
+                        }`}
+                      >
+                        {l.title}
                       </span>
-                    ) : null}
-                  </Link>
-                ))}
+                      {l.durationLabel ? (
+                        <span className="flex-none text-[0.7rem] tabular-nums text-text-faint">
+                          {l.durationLabel}
+                        </span>
+                      ) : null}
+                    </>
+                  );
+                  return locked ? (
+                    <div
+                      key={l.id}
+                      className="flex items-center gap-3.5 border-t border-white/8 py-3 pl-[22px] pr-5"
+                    >
+                      {inner}
+                    </div>
+                  ) : (
+                    <Link
+                      key={l.id}
+                      href={`/app/lessons/${l.id}`}
+                      aria-current={l.status === "current"}
+                      className="flex items-center gap-3.5 border-t border-white/8 py-3 pl-[22px] pr-5 transition-colors hover:bg-surface-2"
+                    >
+                      {inner}
+                    </Link>
+                  );
+                })}
 
                 {m.lessons.length === 0 ? (
                   <p className="border-t border-white/8 px-[22px] py-3 text-[0.8rem] text-text-faint">

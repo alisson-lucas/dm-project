@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getCoursePageForUser } from "@/services/coursePage";
 import { TopBar } from "@/components/TopBar";
 import { CourseContents } from "@/components/CourseContents";
-import { btnGhost, btnPrimary, deniedWrap, sectionTitle } from "@/lib/ui";
+import { btnPrimary, sectionTitle } from "@/lib/ui";
 import { TEACHER, teacherInitials } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -36,29 +36,8 @@ export default async function CoursePage({
 
   if (result.status === "not-found") notFound();
 
-  if (result.status === "forbidden") {
-    return (
-      <>
-        <TopBar email={user.email} />
-        <main className={deniedWrap}>
-          <h1 className="mb-2.5 text-[1.6rem] font-bold">
-            Você ainda não tem este curso
-          </h1>
-          <p className="text-text-dim">
-            O acesso é liberado automaticamente após a compra na Hotmart. Se você
-            já comprou, aguarde alguns minutos e recarregue.
-          </p>
-          <p className="mt-6">
-            <Link href="/app" className={btnGhost}>
-              Voltar ao catálogo
-            </Link>
-          </p>
-        </main>
-      </>
-    );
-  }
-
-  const c = result.data;
+  const { access, data: c } = result;
+  const preview = access === "preview";
 
   return (
     <>
@@ -67,7 +46,9 @@ export default async function CoursePage({
         <div className="grid gap-[clamp(28px,4vw,44px)] lg:grid-cols-[1fr_0.84fr] lg:items-start">
           <div>
             <p className="text-[0.66rem] font-bold uppercase tracking-[0.17em] text-accent-2">
-              {["Trilha", c.levelLabel].filter(Boolean).join(" · ")}
+              {[preview ? "Curso" : "Trilha", c.levelLabel]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
 
             <h1 className="mt-3.5 text-[clamp(2rem,4.5vw,2.5rem)] font-extrabold leading-[1.03] tracking-[-0.03em]">
@@ -85,14 +66,38 @@ export default async function CoursePage({
               {c.stats.durationLabel ? (
                 <Stat value={c.stats.durationLabel} label="Duração" />
               ) : null}
-              <Stat
-                value={String(c.stats.completedCount)}
-                label="Concluídas"
-              />
+              {!preview ? (
+                <Stat
+                  value={String(c.stats.completedCount)}
+                  label="Concluídas"
+                />
+              ) : null}
               <Stat value={String(c.stats.moduleCount)} label="Módulos" />
             </div>
 
-            {c.currentLesson ? (
+            {preview ? (
+              <div className="flex flex-wrap items-center gap-3.5">
+                {c.checkoutUrl ? (
+                  <a
+                    href={c.checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={btnPrimary}
+                  >
+                    Comprar curso
+                  </a>
+                ) : (
+                  <span
+                    className={`${btnPrimary} pointer-events-none opacity-50`}
+                  >
+                    Compra em breve
+                  </span>
+                )}
+                <span className="text-[0.78rem] tracking-[0.04em] text-text-faint">
+                  Acesso liberado na hora após a compra
+                </span>
+              </div>
+            ) : c.currentLesson ? (
               <div className="flex flex-wrap items-center gap-3.5">
                 <Link
                   href={`/app/lessons/${c.currentLesson.id}`}
@@ -163,7 +168,7 @@ export default async function CoursePage({
         <h3 className={`${sectionTitle} mb-4 mt-[clamp(34px,5vw,54px)]`}>
           Conteúdo do curso
         </h3>
-        <CourseContents modules={c.modules} />
+        <CourseContents modules={c.modules} locked={preview} />
       </main>
     </>
   );

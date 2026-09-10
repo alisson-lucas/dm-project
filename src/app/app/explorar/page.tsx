@@ -4,7 +4,17 @@ import { getCurrentUser } from "@/lib/auth";
 import { getCatalog } from "@/services/catalog";
 import { TopBar } from "@/components/TopBar";
 import { ExploreBrowser } from "@/components/ExploreBrowser";
-import { btnPrimary } from "@/lib/ui";
+import {
+  btnPrimary,
+  featureActions,
+  featureBg,
+  featureCard,
+  featureContent,
+  featureImg,
+  featureKicker,
+  featureScrim,
+  featureTitle,
+} from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -31,38 +41,37 @@ export default async function ExplorePage({
         </p>
 
         {featured ? (
-          <div className="relative overflow-hidden rounded-2xl border border-white/8">
-            <div className="relative aspect-[16/6] bg-[radial-gradient(120%_120%_at_85%_0%,rgba(158,34,76,0.4),transparent_60%),linear-gradient(135deg,#2a1a22,#141018)]">
+          <section className={featureCard}>
+            <div className={featureBg} aria-hidden>
               {featured.coverImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={featured.coverImageUrl}
                   alt=""
-                  className="absolute inset-0 h-full w-full object-cover object-[center_28%] opacity-40"
+                  className={featureImg}
                 />
               ) : null}
             </div>
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--color-bg)_6%,rgba(11,11,15,0.35)_55%,transparent_85%)]" />
-            <div className="absolute inset-x-0 bottom-0 max-w-[520px] p-[clamp(20px,4vw,44px)]">
-              <p className="mb-2.5 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-accent-2">
-                Em destaque
-              </p>
-              <h2 className="text-[clamp(1.8rem,4vw,2.6rem)] font-extrabold leading-[1.05]">
-                {featured.title}
-              </h2>
+            <div className={featureScrim} aria-hidden />
+
+            <div className={featureContent}>
+              <p className={featureKicker}>Em destaque</p>
+              <h2 className={featureTitle}>{featured.title}</h2>
               {featured.description ? (
                 <p className="mt-2.5 max-w-[46ch] text-[0.9rem] leading-[1.55] text-text-dim">
                   {featured.description}
                 </p>
               ) : null}
-              <Link
-                href={`/app/courses/${featured.slug}`}
-                className={`${btnPrimary} mt-4`}
-              >
-                Ver curso
-              </Link>
+              <div className={featureActions}>
+                <Link
+                  href={`/app/courses/${featured.slug}`}
+                  className={btnPrimary}
+                >
+                  Ver curso
+                </Link>
+              </div>
             </div>
-          </div>
+          </section>
         ) : null}
 
         {all.length === 0 ? (

@@ -52,6 +52,7 @@ model Course {
   coverImageUrl String?      @map("cover_image_url") // capa mostrada no catálogo (/)
   category      String? // estilo/gênero exibido nos filtros de /explorar (ex: "Blues")
   level         CourseLevel? // nível exibido no selo do card
+  checkoutUrl   String?      @map("checkout_url") // link de checkout da Hotmart; alimenta o botão "Comprar curso" na tela de apresentação
   // Não existe coluna de professor: a plataforma é de um professor só e os
   // dados dele vivem em src/lib/site.ts (TEACHER).
   createdAt     DateTime     @default(now()) @map("created_at")

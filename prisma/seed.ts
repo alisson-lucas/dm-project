@@ -41,6 +41,9 @@ type SeedCourse = {
   // IDs de produto/oferta são PLACEHOLDER — troque pelos reais do painel Hotmart.
   productId: string;
   hotmartProductId: string;
+  // link de checkout da Hotmart (botão "Comprar curso"). Se omitido, o seed
+  // gera um placeholder a partir do hotmartProductId — troque pelo real.
+  checkoutUrl?: string;
   modules: SeedModule[];
 };
 
@@ -535,6 +538,9 @@ async function main() {
   // Cursos → produto Hotmart → módulos → aulas
   // -----------------------------------------------------------------------
   for (const c of COURSES) {
+    const checkoutUrl =
+      c.checkoutUrl ?? `https://pay.hotmart.com/${c.hotmartProductId}`;
+
     await prisma.course.upsert({
       where: { id: c.id },
       update: {
@@ -544,6 +550,7 @@ async function main() {
         coverImageUrl: c.coverImageUrl,
         category: c.category,
         level: c.level,
+        checkoutUrl,
       },
       create: {
         id: c.id,
@@ -553,6 +560,7 @@ async function main() {
         coverImageUrl: c.coverImageUrl,
         category: c.category,
         level: c.level,
+        checkoutUrl,
       },
     });
 

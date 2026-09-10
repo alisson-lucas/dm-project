@@ -8,12 +8,14 @@ import { TrailStrip } from "@/components/TrailStrip";
 import { CourseRow } from "@/components/CourseRow";
 import {
   btnGhost,
-  heroActions,
-  heroBg,
-  heroContent,
-  heroKicker,
-  heroMeta,
-  heroTitle,
+  featureActions,
+  featureBg,
+  featureCard,
+  featureContent,
+  featureKicker,
+  featureMeta,
+  featureScrim,
+  featureTitle,
   rowWrap,
   sectionTitle,
 } from "@/lib/ui";
@@ -24,15 +26,14 @@ export default async function HomePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/app");
 
-  const { all, continueWatching, recommended, categoryRows } = await getHome(
-    user.id
-  );
+  const { myCourses, recommended, continueWatching } = await getHome(user.id);
 
-  if (all.length === 0) {
+  // Nem curso comprado, nem curso pra recomendar = catálogo vazio.
+  if (myCourses.length === 0 && recommended.length === 0) {
     return (
       <>
         <TopBar email={user.email} />
-        <main className="max-w-page mx-auto px-[clamp(16px,4vw,48px)] pb-20 pt-[calc(4rem+40px)]">
+        <main className={`${rowWrap} pb-20 pt-[calc(4rem+40px)]`}>
           <h1 className="text-[clamp(1.6rem,3.5vw,2.2rem)] font-extrabold">
             Cursos
           </h1>
@@ -44,35 +45,46 @@ export default async function HomePage() {
     );
   }
 
+  const hasCourses = myCourses.length > 0;
+
   return (
     <>
       <TopBar email={user.email} />
-      <main>
+      <main className={`${rowWrap} pb-20 pt-[calc(4rem+40px)]`}>
         {continueWatching ? (
           <ContinueHero data={continueWatching} />
         ) : (
-          // Sem matrícula ativa não há "de onde parou" — o hero vira convite
-          // pro catálogo.
-          <section className="relative flex min-h-[min(64vh,520px)] items-end overflow-hidden">
-            <div className={heroBg} aria-hidden />
-            <div className={`${heroContent} pb-[clamp(36px,7vw,88px)]`}>
-              <p className={heroKicker}>Comece agora</p>
-              <h1 className={heroTitle}>Escolha seu primeiro curso</h1>
-              <p className={heroMeta}>
-                O acesso é liberado automaticamente após a compra na Hotmart.
+          // Mesmo cartão do "continue de onde parou", sem capa: ainda não há
+          // aula aberta pra retomar.
+          <section className={featureCard}>
+            <div className={featureBg} aria-hidden />
+            <div className={featureScrim} aria-hidden />
+            <div className={featureContent}>
+              <p className={featureKicker}>
+                {hasCourses ? "Bem-vindo de volta" : "Comece agora"}
               </p>
-              <div className={heroActions}>
-                <Link href="/app/explorar" className={btnGhost}>
-                  Explorar catálogo
-                </Link>
-              </div>
+              <h1 className={featureTitle}>
+                {hasCourses
+                  ? "Escolha por onde começar"
+                  : "Escolha seu primeiro curso"}
+              </h1>
+              <p className={featureMeta}>
+                {hasCourses
+                  ? "Seus cursos estão logo abaixo."
+                  : "O acesso é liberado automaticamente após a compra na Hotmart."}
+              </p>
+              {!hasCourses ? (
+                <div className={featureActions}>
+                  <Link href="/app/explorar" className={btnGhost}>
+                    Explorar catálogo
+                  </Link>
+                </div>
+              ) : null}
             </div>
           </section>
         )}
 
-        <div
-          className={`${rowWrap} mt-[clamp(24px,4vw,40px)] flex flex-col gap-[clamp(28px,4.5vw,48px)] pb-20`}
-        >
+        <div className="mt-[clamp(28px,4vw,44px)] flex flex-col gap-[clamp(28px,4.5vw,48px)]">
           {continueWatching && continueWatching.modules.length > 0 ? (
             <section>
               <h3 className={`${sectionTitle} mb-3`}>Seu histórico</h3>
@@ -83,20 +95,13 @@ export default async function HomePage() {
             </section>
           ) : null}
 
+          <CourseRow title="Seus cursos" items={myCourses} />
+
           <CourseRow
             title="Recomendado para você"
             items={recommended}
             catalogHref="/app/explorar"
           />
-
-          {categoryRows.map((row) => (
-            <CourseRow
-              key={row.category}
-              title={row.title}
-              items={row.items}
-              catalogHref={`/app/explorar?estilo=${encodeURIComponent(row.category)}`}
-            />
-          ))}
         </div>
       </main>
     </>
