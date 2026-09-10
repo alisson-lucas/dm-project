@@ -10,6 +10,7 @@ import { Cta } from '@/components/landing/Cta'
 import { Ticker } from '@/components/landing/Ticker'
 import { CourseCarousel } from '@/components/landing/CourseCarousel'
 import { Offer } from '@/components/landing/Offer'
+import { Benefits } from '@/components/landing/Benefits'
 import { HeroPortrait } from '@/components/landing/HeroPortrait'
 import { HeroStage } from '@/components/landing/HeroStage'
 import { Reveal } from '@/components/landing/Reveal'
@@ -17,7 +18,6 @@ import { Parallax } from '@/components/landing/Parallax'
 import { CountUp } from '@/components/landing/CountUp'
 import { SITE_NAME, TEACHER } from '@/lib/site'
 import {
-  BENEFITS,
   FAQ,
   HERO,
   OFFER,
@@ -25,7 +25,6 @@ import {
   TEACHER_STATS,
   TESTIMONIAL,
 } from '@/lib/landing'
-import { sectionTitle } from '@/lib/ui'
 import { plural } from '@/lib/format'
 
 // Landing é ISR, NÃO force-dynamic como as páginas da área logada: ela recebe
@@ -221,20 +220,19 @@ export default async function LandingPage() {
         </section>
 
         {/* ---------------------------------------------------- benefícios */}
+        {/* Os três cards começavam soltos, sem nada acima deles: um bloco de
+            texto pousado logo depois da fita rolante. O cabeçalho com o filete
+            é o mesmo da seção de depoimento — a página passa a ter um jeito só
+            de abrir seção. Os diagramas de braço moram no componente. */}
         <section className={`${wrap} py-[clamp(48px,7vw,88px)]`}>
-          <Reveal stagger className="grid gap-5 md:grid-cols-3">
-            {BENEFITS.map((b) => (
-              <div
-                key={b.title}
-                className="rounded-xl border border-white/8 bg-surface p-6"
-              >
-                <h3 className="text-[1rem] font-bold">{b.title}</h3>
-                <p className="mt-2.5 text-[0.88rem] leading-[1.6] text-text-dim">
-                  {b.body}
-                </p>
-              </div>
-            ))}
+          <Reveal className="mb-8 flex items-center gap-4">
+            <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-accent-2">
+              // Por que funciona
+            </p>
+            <span aria-hidden className="h-px flex-1 bg-white/10" />
           </Reveal>
+
+          <Benefits />
         </section>
 
         {/* ------------------------------------------ o que você vai ver */}
@@ -279,28 +277,88 @@ export default async function LandingPage() {
         ) : null}
 
         {/* ------------------------------------------------- depoimento */}
-        <section className="overflow-hidden border-y border-white/8 bg-bg-2 py-[clamp(48px,7vw,88px)]">
-          <div
-            className={`${wrap} grid items-center gap-[clamp(28px,4vw,52px)] lg:grid-cols-[1fr_1fr]`}
-          >
-            <Reveal from="left">
-              <p className="mb-3 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-accent-2">
-                Aluno da casa
+        {/* A prova social da página. Antes eram duas colunas iguais com o NOME
+            do aluno como <h2> e a fala dele em texto apagado embaixo — a
+            hierarquia ao contrário: quem convence é a fala, não o nome de
+            alguém que o visitante nunca ouviu falar.
+
+            Agora a fala é o monumento (corpo grande, aspas penduradas fora da
+            margem) e o nome vira assinatura. O vídeo pesa mais que a coluna de
+            texto porque ele é a evidência; o resto é legenda dele.
+
+            O vocabulário visual vem do próprio hero — réguas verticais no
+            fundo e o halo carmim — pra seção conversar com o topo da página em
+            vez de parecer um bloco importado de outro layout. */}
+        <section className="relative isolate overflow-hidden border-y border-white/8 bg-bg-2 py-[clamp(52px,8vw,96px)]">
+          <div aria-hidden className="absolute inset-0 -z-10">
+            {/* as mesmas réguas do hero, mais fracas */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:25%_100%] [mask-image:linear-gradient(to_bottom,transparent,#000_20%,#000_80%,transparent)]" />
+            {/* clarão largo e discreto do lado do vídeo, só pra tirar o
+                fundo do chapado — a cor forte fica no halo preso ao vídeo */}
+            <div className="absolute -left-[10%] top-1/2 h-[min(120%,680px)] w-[min(60%,760px)] -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(158,34,76,0.22),transparent_78%)]" />
+          </div>
+
+          <div className={wrap}>
+            {/* cabeçalho: o filete corre até a borda e amarra a largura toda */}
+            <Reveal className="flex items-center gap-4">
+              <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-accent-2">
+                // Aluno da casa
               </p>
-              <h2 className={`${sectionTitle} text-[clamp(1.4rem,3vw,1.9rem)]`}>
-                {TESTIMONIAL.studentName}
-              </h2>
-              <p className="mt-3 max-w-[46ch] text-[0.92rem] leading-[1.6] text-text-dim">
-                {TESTIMONIAL.quote}
-              </p>
+              <span aria-hidden className="h-px flex-1 bg-white/10" />
             </Reveal>
 
-            <Reveal from="right">
-              <VideoFacade
-                videoId={TESTIMONIAL.videoId}
-                title={TESTIMONIAL.title}
-              />
+            <Reveal className="mt-5">
+              <h2 className="text-[clamp(1.55rem,3.6vw,2.25rem)] font-extrabold leading-[1.06] tracking-[-0.03em]">
+                <span className="block text-text-dim">Não é promessa.</span>
+                <span className="block">É um aluno tocando.</span>
+              </h2>
             </Reveal>
+
+            <div className="mt-[clamp(30px,4vw,52px)] grid items-center gap-[clamp(30px,4vw,56px)] lg:grid-cols-[1.12fr_0.88fr]">
+              <Reveal from="left" className="relative">
+                {/* A luz carmim por trás do vídeo — o único ponto de cor forte
+                    da seção. Vem ANTES do vídeo no DOM, então pinta embaixo
+                    dele, e o blur é o que faz ela vazar pelas bordas. */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -inset-x-8 -inset-y-10 rounded-[40px] bg-[radial-gradient(closest-side,rgba(158,34,76,0.62),rgba(158,34,76,0.24)_58%,transparent)] blur-[38px]"
+                />
+                <VideoFacade
+                  videoId={TESTIMONIAL.videoId}
+                  title={TESTIMONIAL.title}
+                  className="shadow-[0_44px_90px_-34px_rgba(0,0,0,0.95)]"
+                />
+              </Reveal>
+
+              <Reveal
+                from="right"
+                className="relative lg:pl-[clamp(28px,3.5vw,52px)]"
+              >
+                {/* a régua vertical do fundo trazida pra frente como divisor */}
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-1 hidden h-[calc(100%-8px)] w-px bg-white/12 lg:block"
+                />
+
+                <blockquote>
+                  {/* text-indent negativo pendura a aspa de abertura fora da
+                      margem: alinha o texto de verdade, e não a pontuação */}
+                  <p className="text-[clamp(1.25rem,2.55vw,1.95rem)] font-semibold leading-[1.36] tracking-[-0.02em] text-text [text-indent:-0.42em] [text-wrap:balance]">
+                    &ldquo;{TESTIMONIAL.quote}&rdquo;
+                  </p>
+
+                  <footer className="mt-8">
+                    <span aria-hidden className="mb-3.5 block h-px w-10 bg-accent-2" />
+                    <cite className="block text-[0.85rem] font-bold uppercase not-italic tracking-[0.09em]">
+                      {TESTIMONIAL.studentName}
+                    </cite>
+                    <span className="mt-1 block text-[0.75rem] text-text-faint">
+                      Aluno do {SITE_NAME}
+                    </span>
+                  </footer>
+                </blockquote>
+              </Reveal>
+            </div>
           </div>
         </section>
 

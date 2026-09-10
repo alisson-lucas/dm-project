@@ -102,6 +102,10 @@ export const TEACHER_STATS: { value: string; label: string }[] = [
 ];
 
 // Depoimento em vídeo do aluno.
+//
+// ⚠️ TEMPORÁRIO — `quote` hoje DESCREVE o vídeo em vez de citar o aluno. A
+// seção passou a exibir essa frase em corpo grande, como fala dele: com o
+// texto atual ela lê como legenda, não como depoimento. Ver PLACEHOLDERS.
 export const TESTIMONIAL = {
   videoId: "2_lJfSzOB-Q",
   studentName: "Fernando Lima",
@@ -110,16 +114,26 @@ export const TESTIMONIAL = {
     "Aluno do DM Project tocando o que construiu ao longo da trilha.",
 };
 
-export const BENEFITS = [
+// `art` escolhe o diagrama de braço que acompanha o card (ver
+// components/landing/Benefits.tsx). Fica aqui, e não pela POSIÇÃO no array,
+// pra reordenar a lista não trocar os desenhos de lugar.
+export const BENEFITS: {
+  title: string;
+  body: string;
+  art: "ordem" | "braco" | "ritmo";
+}[] = [
   {
+    art: "ordem",
     title: "Uma ordem que faz sentido",
     body: "Cada aula abre a próxima, do primeiro desenho até o improviso sobre a progressão inteira. Você sempre sabe qual é o passo seguinte — e a plataforma te devolve exatamente onde parou.",
   },
   {
+    art: "braco",
     title: "No braço, não no quadro",
     body: "Pentatônica, modos gregos e reharmonização com o desenho na mão e o porquê de cada nota. Teoria só na medida em que você usa pra tocar.",
   },
   {
+    art: "ritmo",
     title: "No seu ritmo, sem prazo",
     body: "Assista pelo computador ou pelo celular, quantas vezes precisar. Volte na mesma aula até a frase sair limpa.",
   },
@@ -169,4 +183,5 @@ export const PLACEHOLDERS: string[] = [
   "OFFER.checkoutUrl: link de checkout da Hotmart ainda não configurado",
   "TEACHER_BIO: bio genérica, falta a real do professor",
   "images.og: falta a imagem de compartilhamento (1200x630)",
+  "TESTIMONIAL.quote: descreve o vídeo em vez de citar o aluno — falta a fala real",
 ];
