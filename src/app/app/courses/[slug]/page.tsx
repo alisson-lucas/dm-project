@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getCoursePageForUser } from "@/services/coursePage";
 import { TopBar } from "@/components/TopBar";
 import { CourseContents } from "@/components/CourseContents";
+import { CourseIntro } from "@/components/CourseIntro";
 import { btnPrimary, sectionTitle } from "@/lib/ui";
 import { TEACHER, teacherInitials } from "@/lib/site";
 
@@ -119,22 +120,34 @@ export default async function CoursePage({
           </div>
 
           <div>
-            <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl border border-white/8 bg-[linear-gradient(135deg,#2a1a22,#141018)]">
-              {c.coverImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={c.coverImageUrl}
-                  alt=""
-                  // absolute pelo mesmo motivo do ExploreCard: sem isso a
-                  // imagem estica o container que só tem aspect-ratio
-                  className="absolute inset-0 h-full w-full object-cover object-[center_22%]"
-                />
-              ) : (
-                <span className="px-4 text-center text-[0.72rem] uppercase tracking-[0.13em] text-text-faint">
-                  {c.title}
-                </span>
-              )}
-            </div>
+            {/* Vídeo de apresentação no lugar da capa. A capa não sumiu: ela
+                virou o pôster do player. Curso sem vídeo cadastrado continua
+                mostrando só a imagem, como antes — nenhuma tela quebra por
+                causa de uma coluna vazia. */}
+            {c.introVideo ? (
+              <CourseIntro
+                embedUrl={c.introVideo.embedUrl}
+                poster={c.coverImageUrl}
+                title={c.title}
+              />
+            ) : (
+              <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-white/8 bg-[linear-gradient(135deg,#2a1a22,#141018)]">
+                {c.coverImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={c.coverImageUrl}
+                    alt=""
+                    // absolute pelo mesmo motivo do ExploreCard: sem isso a
+                    // imagem estica o container que só tem aspect-ratio
+                    className="absolute inset-0 h-full w-full object-cover object-[center_22%]"
+                  />
+                ) : (
+                  <span className="px-4 text-center text-[0.72rem] uppercase tracking-[0.13em] text-text-faint">
+                    {c.title}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Professor da casa — sempre o mesmo, vem de src/lib/site.ts */}
             <div className="mt-4 flex items-center gap-3">

@@ -3,6 +3,7 @@ import {
   VideoProvider,
   CourseLevel,
   EnrollmentStatus,
+  UserRole,
   WebhookEventStatus,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -36,6 +37,10 @@ type SeedCourse = {
   title: string;
   description: string;
   coverImageUrl: string;
+  // Vídeo de apresentação da tela do curso. PLACEHOLDER: hoje aponta pra uma
+  // aula do próprio curso, só pra tela não nascer vazia — o professor ainda
+  // precisa gravar uma apresentação de verdade. Omitir cai na capa.
+  introVideoExternalId?: string;
   category: string;
   level: CourseLevel;
   // IDs de produto/oferta são PLACEHOLDER — troque pelos reais do painel Hotmart.
@@ -541,6 +546,17 @@ async function main() {
     const checkoutUrl =
       c.checkoutUrl ?? `https://pay.hotmart.com/${c.hotmartProductId}`;
 
+    // Apresentação do curso: quando o seed não traz uma, usa o vídeo da
+    // primeira aula só pra tela não nascer vazia. É PLACEHOLDER — assim que o
+    // professor gravar uma apresentação de verdade, troque aqui (ou direto no
+    // banco, nas colunas intro_video_*).
+    const primeiraAula = c.modules[0]?.lessons[0];
+    const introVideoExternalId =
+      c.introVideoExternalId ?? primeiraAula?.videoExternalId ?? null;
+    const introVideoProvider = introVideoExternalId
+      ? (primeiraAula?.videoProvider ?? VideoProvider.YOUTUBE)
+      : null;
+
     await prisma.course.upsert({
       where: { id: c.id },
       update: {
@@ -551,6 +567,8 @@ async function main() {
         category: c.category,
         level: c.level,
         checkoutUrl,
+        introVideoProvider,
+        introVideoExternalId,
       },
       create: {
         id: c.id,
@@ -561,6 +579,8 @@ async function main() {
         category: c.category,
         level: c.level,
         checkoutUrl,
+        introVideoProvider,
+        introVideoExternalId,
       },
     });
 
@@ -638,10 +658,21 @@ async function main() {
     email: string;
     name: string;
     passwordHash: string | null;
+    role?: UserRole;
     // matrículas: [courseId, status, lastLessonId?]
     // lastLessonId alimenta o "Continue de onde parou" da home.
     enrollments: Array<[string, EnrollmentStatus, string?]>;
   }> = [
+    {
+      // O professor. Entra pelo mesmo /login dos alunos e é o papel no banco
+      // que libera o /admin — não existe senha nem rota separada de admin.
+      id: "user-admin",
+      email: "professor@dmproject.com.br",
+      name: "Dinho Moska",
+      passwordHash,
+      role: UserRole.ADMIN,
+      enrollments: [],
+    },
     {
       id: "user-ativo",
       email: "aluno.ativo@example.com",
@@ -683,12 +714,17 @@ async function main() {
   for (const p of people) {
     await prisma.user.upsert({
       where: { email: p.email },
-      update: { name: p.name, passwordHash: p.passwordHash },
+      update: {
+        name: p.name,
+        passwordHash: p.passwordHash,
+        role: p.role ?? UserRole.STUDENT,
+      },
       create: {
         id: p.id,
         email: p.email,
         name: p.name,
         passwordHash: p.passwordHash,
+        role: p.role ?? UserRole.STUDENT,
       },
     });
 

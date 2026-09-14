@@ -1,6 +1,7 @@
 import { EnrollmentStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { courseCover } from "../lib/covers";
+import { getIntroEmbed, type VideoEmbed } from "./videoEmbed";
 import {
   courseLevelLabel,
   formatClock,
@@ -41,6 +42,8 @@ export interface CoursePageData {
   title: string;
   description: string | null;
   coverImageUrl: string | null;
+  /** vídeo de apresentação do curso; null = a tela mostra a capa */
+  introVideo: VideoEmbed | null;
   category: string | null;
   levelLabel: string | null;
   /** link de checkout da Hotmart (botão "Comprar curso" no modo preview) */
@@ -144,6 +147,7 @@ export async function getCoursePageForUser(
       title: course.title,
       description: course.description,
       coverImageUrl: courseCover(course.coverImageUrl),
+      introVideo: getIntroEmbed(course),
       category: course.category,
       levelLabel: courseLevelLabel(course.level),
       checkoutUrl: course.checkoutUrl,

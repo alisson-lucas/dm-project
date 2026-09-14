@@ -7,6 +7,10 @@ import { SESSION_COOKIE, verifySessionToken } from "./lib/sessionToken";
 //   o destino em ?next. Como o matcher pega o prefixo inteiro, qualquer página
 //   nova criada ali já nasce protegida — não dá pra esquecer de listar.
 //
+// - `/admin/*` é o painel do professor. Aqui o middleware só garante que há
+//   SESSÃO: o papel de admin mora no banco e este código roda no runtime edge,
+//   onde não há Prisma. Quem checa o papel é o layout do /admin.
+//
 // - `/` é a landing pública. Quem JÁ tem sessão é mandado direto pra
 //   plataforma, então o visitante recebe a página estática e o aluno que
 //   digita só o domínio não precisa clicar em nada.
@@ -33,5 +37,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/app/:path*"],
+  matcher: ["/", "/app/:path*", "/admin/:path*"],
 };

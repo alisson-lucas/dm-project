@@ -21,11 +21,21 @@ datasource db {
 // Usuários (alunos)
 // ---------------------------------------------------------------------------
 
+// Quem pode entrar no painel administrativo. A plataforma é de um professor
+// só, então isto é ADMIN ou nada — não há hierarquia de permissões a modelar.
+// Promover alguém é trocar esta coluna no banco; não existe (e não deve
+// existir) tela para um usuário se promover sozinho.
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   name         String?
   passwordHash String?  @map("password_hash") // null até o aluno definir senha (conta criada via webhook)
+  role         UserRole @default(STUDENT)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -53,6 +63,13 @@ model Course {
   category      String? // estilo/gênero exibido nos filtros de /explorar (ex: "Blues")
   level         CourseLevel? // nível exibido no selo do card
   checkoutUrl   String?      @map("checkout_url") // link de checkout da Hotmart; alimenta o botão "Comprar curso" na tela de apresentação
+
+  // Vídeo de apresentação do curso, exibido na tela do curso no lugar da capa.
+  // Mesmo par provedor+id das aulas, e resolvido pelo mesmo getVideoEmbed —
+  // trocar de provedor aqui não mexe em nenhuma linha de código. Sem vídeo, a
+  // tela volta a mostrar coverImageUrl, então nenhum curso quebra sem isso.
+  introVideoProvider   VideoProvider? @map("intro_video_provider")
+  introVideoExternalId String?        @map("intro_video_external_id")
   // Não existe coluna de professor: a plataforma é de um professor só e os
   // dados dele vivem em src/lib/site.ts (TEACHER).
   createdAt     DateTime     @default(now()) @map("created_at")
