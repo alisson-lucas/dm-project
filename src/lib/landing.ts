@@ -7,7 +7,9 @@ export const OFFER = {
   // isso do que um botão que leva pro lugar errado.
   checkoutUrl: null as string | null,
 
-  // ⚠️ TEMPORÁRIO — preço provisório. Ver PLACEHOLDERS no fim deste arquivo.
+  // R$ 97 à vista, confirmado pelo professor no briefing de 16/09/2026 — ele
+  // respondeu o mesmo valor que estava provisório aqui, e deixou o campo de
+  // parcelamento em branco (por isso `prefix` segue null).
   //
   // Fica em partes (e não numa string só) porque a seção compõe a tipografia
   // da referência: prefixo pequeno, "R$" médio, número gigante e centavos
@@ -20,6 +22,9 @@ export const OFFER = {
     alternative: null as string | null, // ex.: "Ou R$ 970,00 à vista"
   },
 
+  // ⚠️ NÃO RESPONDIDO no briefing: o campo voltou em branco. Fica nos 7 dias,
+  // que é o mínimo que a lei exige — mas é uma promessa pública que o
+  // professor ainda não confirmou. Ver PLACEHOLDERS.
   guaranteeDays: 7,
 
   // Checklist da coluna esquerda. As três primeiras linhas (cursos, aulas e
@@ -81,24 +86,23 @@ export const TICKER = [
 // essa página pode ter, e é a única coisa aqui que eu não tenho como escrever
 // no lugar dele. O texto abaixo descreve o método, que é verificável, em vez de
 // inventar currículo.
+// Texto do próprio professor (briefing de 16/09/2026), em primeira pessoa.
+// Mexi só na ortografia, na pontuação e no nome próprio das escolas — nenhum
+// fato foi acrescentado, tirado ou arredondado. O original bruto está em
+// docs/respostas-cliente.csv, se precisar conferir.
 export const TEACHER_BIO =
-  "Guitarrista e professor. O DM Project é o caminho que ele desenhou para tirar o aluno da repetição de formas decoradas e levar até o improviso com intenção — a mesma sequência, na mesma ordem, aula por aula.";
+  "Comecei na música aos 14 anos, na igreja, e logo fui atrás de aulas com músicos da região. Aos 20 já tocava com bandas e artistas locais e dava as primeiras aulas na comunidade onde morava. Isso me levou a dar aula em escolas como o Colégio Salesiano, o Espaço Musical Asafe e a Escola Dom Bosco de Artes e Ofícios. Há 15 anos fundei o meu próprio espaço, o DM Project Music, por onde já passaram músicos que hoje vivem de música.";
 
-// Números grandes do card "Quem ensina" (o "+6 anos / +400 clientes" da
-// referência). Credencial concreta é a prova social mais forte dessa seção.
+// Números grandes do card "Quem ensina". Credencial concreta é a prova social
+// mais forte dessa seção — e por isso mesmo nenhum número entra aqui sem o
+// professor ter confirmado por escrito.
 //
-// TODO: preencher com os números REAIS do professor — anos ensinando, alunos
-// já formados, tempo de palco, turmas. Enquanto a lista estiver vazia a linha
-// inteira não é renderizada; nada de placeholder aparecendo pro visitante.
-//
-// Exemplo do formato:
-//   { value: "+12", label: "anos ensinando guitarra" },
-//   { value: "+300", label: "alunos já passaram pelo método" },
-// ⚠️ TEMPORÁRIO — números provisórios, combinados com o cliente só para o
-// layout não ficar vazio. Ver PLACEHOLDERS no fim deste arquivo.
+// Os dois respondidos e confirmados pelo professor no briefing de 16/09/2026.
+// 35 anos bate com a bio (começou a dar aula aos 20); o total de alunos veio
+// como "2.0000" no formulário e ele confirmou depois que são 2.000.
 export const TEACHER_STATS: { value: string; label: string }[] = [
-  { value: "+30", label: "Anos de experiência" },
-  { value: "+1000", label: "Alunos" },
+  { value: "+35", label: "Anos dando aula" },
+  { value: "+2.000", label: "Alunos" },
 ];
 
 // Depoimento em vídeo do aluno.
@@ -178,10 +182,9 @@ export const FAQ = [
 // lista esvaziar, o aviso some sozinho.
 // ---------------------------------------------------------------------------
 export const PLACEHOLDERS: string[] = [
-  'TEACHER_STATS: "+30 anos" e "+1000 alunos" são números provisórios',
-  'OFFER.price: "R$ 97" é um preço provisório',
+  "OFFER.guaranteeDays: 7 dias é suposição nossa; o professor não respondeu",
   "OFFER.checkoutUrl: link de checkout da Hotmart ainda não configurado",
-  "TEACHER_BIO: bio genérica, falta a real do professor",
   "images.og: falta a imagem de compartilhamento (1200x630)",
   "TESTIMONIAL.quote: descreve o vídeo em vez de citar o aluno — falta a fala real",
+  "FAQ promete um e-mail de suporte que não existe em lugar nenhum do código",
 ];
