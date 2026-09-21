@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getCatalog } from "@/services/catalog";
-import { TopBar } from "@/components/TopBar";
 import { ExploreBrowser } from "@/components/ExploreBrowser";
 import {
   btnPrimary,
@@ -21,12 +20,12 @@ export const dynamic = "force-dynamic";
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: Promise<{ estilo?: string }>;
+  searchParams: Promise<{ estilo?: string; q?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/app/explorar");
 
-  const [{ all }, { estilo }] = await Promise.all([
+  const [{ all }, { estilo, q }] = await Promise.all([
     getCatalog(user.id),
     searchParams,
   ]);
@@ -34,8 +33,7 @@ export default async function ExplorePage({
 
   return (
     <>
-      <TopBar email={user.email} />
-      <main className="max-w-page mx-auto px-[clamp(16px,4vw,48px)] pb-20 pt-[calc(4rem+40px)]">
+      <main className="max-w-page mx-auto px-[clamp(16px,4vw,48px)] pb-20 pt-[clamp(24px,4vw,40px)]">
         <p className="mb-3 text-[0.78rem] uppercase tracking-[0.17em] text-text-faint">
           catálogo · {all.length} {all.length === 1 ? "curso" : "cursos"}
         </p>
@@ -79,7 +77,7 @@ export default async function ExplorePage({
             Nenhum curso cadastrado ainda.
           </p>
         ) : (
-          <ExploreBrowser courses={all} initialCategory={estilo} />
+          <ExploreBrowser courses={all} initialCategory={estilo} initialQuery={q} />
         )}
       </main>
     </>

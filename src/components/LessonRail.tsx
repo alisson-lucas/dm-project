@@ -37,11 +37,14 @@ export function LessonRail({
 
   return (
     <nav aria-label="Aulas do curso">
-      <ol
+      {/* O preenchimento fica FORA do <ol>: só <li> pode ser filho direto de
+          uma lista, e um <span> ali é HTML inválido — o navegador tolera, mas
+          é o tipo de coisa que volta como erro de hidratação. */}
+      <div
         className={
           // o corpo do braço: as duas bordas são o filete da madeira, e o
           // gradiente repetido faz as cordas
-          "relative flex h-[38px] overflow-hidden rounded-[4px] border-y border-white/15 " +
+          "relative h-[38px] overflow-hidden rounded-[4px] border-y border-white/15 " +
           "bg-white/[0.025] bg-[repeating-linear-gradient(to_bottom,transparent_0_6px,rgba(255,255,255,0.08)_6px_7px)]"
         }
       >
@@ -50,6 +53,8 @@ export function LessonRail({
           style={{ width: `${percorrido}%` }}
           className="pointer-events-none absolute inset-y-0 left-0 bg-[linear-gradient(to_right,rgba(158,34,76,0.05),rgba(158,34,76,0.42))]"
         />
+
+        <ol className="relative flex h-full">
         {aulas.map((l, i) => {
           const vista = i < atual;
           const aqui = i === atual;
@@ -80,7 +85,8 @@ export function LessonRail({
             </li>
           );
         })}
-      </ol>
+        </ol>
+      </div>
     </nav>
   );
 }

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getCoursePageForUser } from "@/services/coursePage";
-import { TopBar } from "@/components/TopBar";
 import { CourseContents } from "@/components/CourseContents";
 import { CourseIntro } from "@/components/CourseIntro";
 import { btnPrimary, sectionTitle } from "@/lib/ui";
@@ -42,8 +41,7 @@ export default async function CoursePage({
 
   return (
     <>
-      <TopBar email={user.email} />
-      <main className="max-w-page mx-auto px-[clamp(16px,4vw,48px)] pb-20 pt-[calc(4rem+40px)]">
+      <main className="max-w-page mx-auto px-[clamp(16px,4vw,48px)] pb-20 pt-[clamp(24px,4vw,40px)]">
         <div className="grid gap-[clamp(28px,4vw,44px)] lg:grid-cols-[1fr_0.84fr] lg:items-start">
           <div>
             <p className="text-[0.66rem] font-bold uppercase tracking-[0.17em] text-accent-2">

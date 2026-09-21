@@ -15,13 +15,25 @@ const LEVELS = [
 const chipBase =
   "cursor-pointer border font-medium transition-colors hover:border-accent/60";
 
+// Tira acento e caixa pra comparar: quem digita "pentatonica" tem que achar
+// "Pentatônica".
+function normal(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
 export function ExploreBrowser({
   courses,
   initialCategory,
+  initialQuery = "",
 }: {
   courses: CatalogCourse[];
   /** estilo pré-selecionado via ?estilo= (ignorado se não existir no catálogo) */
   initialCategory?: string;
+  /** texto vindo da busca do topo (?q=) */
+  initialQuery?: string;
 }) {
   const [cat, setCat] = useState(() =>
     initialCategory && courses.some((c) => c.category === initialCategory)
@@ -29,6 +41,7 @@ export function ExploreBrowser({
       : "Todos"
   );
   const [lvl, setLvl] = useState("Todos");
+  const [q, setQ] = useState(initialQuery);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -36,16 +49,21 @@ export function ExploreBrowser({
     return ["Todos", ...[...set].sort((a, b) => a.localeCompare(b, "pt-BR"))];
   }, [courses]);
 
-  const filtering = cat !== "Todos" || lvl !== "Todos";
+  const busca = normal(q.trim());
+  const filtering = cat !== "Todos" || lvl !== "Todos" || busca.length > 0;
 
   const filtered = useMemo(
     () =>
       courses.filter(
         (c) =>
           (cat === "Todos" || c.category === cat) &&
-          (lvl === "Todos" || c.level === lvl)
+          (lvl === "Todos" || c.level === lvl) &&
+          (busca === "" ||
+            normal(c.title).includes(busca) ||
+            normal(c.description ?? "").includes(busca) ||
+            normal(c.category ?? "").includes(busca))
       ),
-    [courses, cat, lvl]
+    [courses, cat, lvl, busca]
   );
 
   const rows = useMemo(() => {
@@ -74,7 +92,16 @@ export function ExploreBrowser({
 
   return (
     <>
-      <div className="mt-8 flex flex-wrap gap-2">
+      <input
+        type="search"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Pesquisar curso…"
+        aria-label="Pesquisar curso"
+        className="mt-8 w-full max-w-[420px] rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-[0.88rem] text-text placeholder:text-text-faint focus:border-accent-2 focus:outline-none"
+      />
+
+      <div className="mt-4 flex flex-wrap gap-2">
         {categories.map((c) => {
           const on = c === cat;
           return (

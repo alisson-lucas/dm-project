@@ -1,26 +1,19 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getHome } from "@/services/home";
-import { TopBar } from "@/components/TopBar";
-import { ContinueHero } from "@/components/ContinueHero";
+import { HomeHero, type HeroSlide } from "@/components/HomeHero";
 import { TrailStrip } from "@/components/TrailStrip";
 import { CourseRow } from "@/components/CourseRow";
-import {
-  btnGhost,
-  featureActions,
-  featureBg,
-  featureCard,
-  featureContent,
-  featureKicker,
-  featureMeta,
-  featureScrim,
-  featureTitle,
-  rowWrap,
-  sectionTitle,
-} from "@/lib/ui";
+import { SITE_NAME } from "@/lib/site";
+import { plural } from "@/lib/format";
+import { rowWrap, sectionTitle } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
+
+// Slide de boas-vindas. A imagem é um caminho comum em /public, então trocar
+// esta foto por um banner desenhado (o do print que o cliente mandou, por
+// exemplo) é editar a linha abaixo — sem tocar no carrossel.
+const IMAGEM_BOAS_VINDAS = "/images/landing/professor-sobre.jpeg";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
@@ -31,58 +24,81 @@ export default async function HomePage() {
   // Nem curso comprado, nem curso pra recomendar = catálogo vazio.
   if (myCourses.length === 0 && recommended.length === 0) {
     return (
-      <>
-        <TopBar email={user.email} />
-        <main className={`${rowWrap} pb-20 pt-[calc(4rem+40px)]`}>
-          <h1 className="text-[clamp(1.6rem,3.5vw,2.2rem)] font-extrabold">
-            Cursos
-          </h1>
-          <p className="mt-3 max-w-[48ch] leading-[1.6] text-text-dim">
-            Nenhum curso cadastrado ainda.
-          </p>
-        </main>
-      </>
+      <main className={`${rowWrap} pb-20 pt-[clamp(24px,4vw,40px)]`}>
+        <h1 className="text-[clamp(1.6rem,3.5vw,2.2rem)] font-extrabold">
+          Cursos
+        </h1>
+        <p className="mt-3 max-w-[48ch] leading-[1.6] text-text-dim">
+          Nenhum curso cadastrado ainda.
+        </p>
+      </main>
     );
   }
 
-  const hasCourses = myCourses.length > 0;
+  const temCursos = myCourses.length > 0;
+
+  // ------------------------------------------------------------- destaques
+  // A ordem é a que o cliente pediu: boas-vindas primeiro, depois o que dá
+  // pra fazer agora. Vale saber que isso deixa o "retomar aula" a um slide de
+  // distância — para quem já é aluno, ele é a ação mais útil da tela.
+  const slides: HeroSlide[] = [
+    {
+      id: "boas-vindas",
+      kicker: temCursos ? "Bem-vindo de volta" : "Bem-vindo",
+      title: `Sua trilha de guitarra começa no ${SITE_NAME}`,
+      meta: temCursos
+        ? `Você tem ${plural(myCourses.length, "curso")} liberado${myCourses.length === 1 ? "" : "s"}.`
+        : "O acesso é liberado automaticamente após a compra.",
+      image: IMAGEM_BOAS_VINDAS,
+      cta: temCursos
+        ? { href: "#seus-cursos", label: "Ver meus cursos" }
+        : { href: "/app/explorar", label: "Explorar catálogo" },
+      secondary: { href: "/app/explorar", label: "Explorar catálogo" },
+    },
+  ];
+
+  if (continueWatching) {
+    slides.push({
+      id: "continuar",
+      kicker: continueWatching.fresh ? "Comece por aqui" : "Continue de onde parou",
+      title: continueWatching.lessonTitle,
+      meta: [
+        continueWatching.courseTitle,
+        `Aula ${continueWatching.lessonNumber} de ${continueWatching.lessonTotal}`,
+        continueWatching.lessonDurationLabel,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      image: continueWatching.coverImageUrl,
+      cta: {
+        href: `/app/lessons/${continueWatching.lessonId}`,
+        label: continueWatching.fresh ? "Começar aula" : "Retomar aula",
+      },
+      secondary: {
+        href: `/app/courses/${continueWatching.courseSlug}`,
+        label: "Ver a trilha",
+      },
+      percent: continueWatching.percent,
+    });
+  }
+
+  // Cursos em destaque: os que o aluno ainda NÃO tem. Anunciar no banner um
+  // curso já comprado é gastar o espaço mais nobre da tela com quem já pagou.
+  for (const curso of recommended.slice(0, 3)) {
+    slides.push({
+      id: curso.id,
+      kicker: [curso.category, "Em destaque"].filter(Boolean).join(" · "),
+      title: curso.title,
+      meta: curso.description,
+      image: curso.coverImageUrl,
+      cta: { href: `/app/courses/${curso.slug}`, label: "Ver curso" },
+    });
+  }
 
   return (
     <>
-      <TopBar email={user.email} />
-      <main className={`${rowWrap} pb-20 pt-[calc(4rem+40px)]`}>
-        {continueWatching ? (
-          <ContinueHero data={continueWatching} />
-        ) : (
-          // Mesmo cartão do "continue de onde parou", sem capa: ainda não há
-          // aula aberta pra retomar.
-          <section className={featureCard}>
-            <div className={featureBg} aria-hidden />
-            <div className={featureScrim} aria-hidden />
-            <div className={featureContent}>
-              <p className={featureKicker}>
-                {hasCourses ? "Bem-vindo de volta" : "Comece agora"}
-              </p>
-              <h1 className={featureTitle}>
-                {hasCourses
-                  ? "Escolha por onde começar"
-                  : "Escolha seu primeiro curso"}
-              </h1>
-              <p className={featureMeta}>
-                {hasCourses
-                  ? "Seus cursos estão logo abaixo."
-                  : "O acesso é liberado automaticamente após a compra na Hotmart."}
-              </p>
-              {!hasCourses ? (
-                <div className={featureActions}>
-                  <Link href="/app/explorar" className={btnGhost}>
-                    Explorar catálogo
-                  </Link>
-                </div>
-              ) : null}
-            </div>
-          </section>
-        )}
+      <main className={`${rowWrap} pb-20 pt-[clamp(24px,4vw,40px)]`}>
+        <HomeHero slides={slides} />
 
         <div className="mt-[clamp(28px,4vw,44px)] flex flex-col gap-[clamp(28px,4.5vw,48px)]">
           {continueWatching && continueWatching.modules.length > 0 ? (
@@ -95,7 +111,9 @@ export default async function HomePage() {
             </section>
           ) : null}
 
-          <CourseRow title="Seus cursos" items={myCourses} />
+          <div id="seus-cursos" className="scroll-mt-24">
+            <CourseRow title="Seus cursos" items={myCourses} />
+          </div>
 
           <CourseRow
             title="Recomendado para você"

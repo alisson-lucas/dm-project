@@ -5,7 +5,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { getLessonPlayerForUser } from "@/services/lessonAccess";
 import { markLessonWatched } from "@/services/progress";
 import { formatDuration } from "@/lib/format";
-import { TopBar } from "@/components/TopBar";
 import { LessonRail } from "@/components/LessonRail";
 import { LessonPlaylist } from "@/components/LessonPlaylist";
 import { btnGhost, deniedWrap } from "@/lib/ui";
@@ -65,7 +64,6 @@ export default async function LessonPage({
   if (!result.ok) {
     return (
       <>
-        <TopBar email={user.email} />
         <main className={deniedWrap}>
           <h1 className="mb-2.5 text-[1.6rem] font-bold">Acesso não liberado</h1>
           <p className="text-text-dim">{result.message}</p>
@@ -88,14 +86,13 @@ export default async function LessonPage({
 
   return (
     <>
-      <TopBar email={user.email} />
 
       {/* O fundo desce um tom abaixo do resto do app: é o que faz o player ser
           a única coisa acesa na tela. */}
       {/* overflow-x-hidden por causa do brilho do palco: ele é desenhado
           PARA FORA do player (-inset) e, no celular, onde a margem lateral é
           de 16px, vazava da tela e criava barra horizontal. */}
-      <main className="min-h-screen overflow-x-hidden bg-[#08080b] pb-20 pt-[calc(4rem+22px)]">
+      <main className="min-h-screen overflow-x-hidden bg-[#08080b] pb-20 pt-[clamp(20px,3vw,30px)]">
         <div className="mx-auto max-w-[1240px] px-[clamp(16px,4vw,48px)]">
           {/* ---------------------------------------------- trilha e posição */}
           <div className="mb-3.5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
