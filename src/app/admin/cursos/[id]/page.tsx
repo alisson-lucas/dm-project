@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buscarCurso, categoriasExistentes } from "@/services/adminCourses";
+import { categoriasExistentes } from "@/services/adminCourses";
+import { buscarConteudo } from "@/services/adminContent";
 import { CourseForm } from "@/components/admin/CourseForm";
+import { ProductMap } from "@/components/admin/ProductMap";
+import { ContentEditor } from "@/components/admin/ContentEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +19,7 @@ export default async function EditarCursoPage({
   const { salvo } = await searchParams;
 
   const [curso, categorias] = await Promise.all([
-    buscarCurso(id),
+    buscarConteudo(id),
     categoriasExistentes(),
   ]);
 
@@ -54,6 +57,10 @@ export default async function EditarCursoPage({
       ) : null}
 
       <CourseForm curso={curso} categorias={categorias} />
+
+      <ProductMap courseId={curso.id} produtos={curso.products} />
+
+      <ContentEditor courseId={curso.id} modulos={curso.modules} />
     </>
   );
 }

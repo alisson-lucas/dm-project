@@ -20,9 +20,9 @@ export default async function NovoCursoPage() {
         Novo curso
       </h1>
       <p className="mb-8 max-w-[60ch] text-[0.9rem] text-text-dim">
-        O curso é criado sem aulas — ele aparece no catálogo, mas a tela dele
-        avisa que o conteúdo ainda está sendo publicado. Os módulos e as aulas
-        continuam vindo pelo seed do banco.
+        Salve a ficha primeiro. Na tela seguinte você liga o produto da Hotmart
+        (é o que libera o acesso de quem compra) e cadastra os módulos e as
+        aulas.
       </p>
 
       <CourseForm categorias={categorias} />

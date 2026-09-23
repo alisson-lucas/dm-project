@@ -8,9 +8,10 @@ export const dynamic = "force-dynamic";
 // Lista de cursos do painel.
 //
 // Além do nome, ela mostra o que IMPEDE cada curso de funcionar: sem aula o
-// aluno abre a tela e não tem o que assistir; sem link de compra o botão de
-// comprar fica inerte. São as duas coisas que mais travam um lançamento, e
-// descobrir isso abrindo curso por curso é como se perde uma tarde.
+// aluno abre a tela e não tem o que assistir; sem produto da Hotmart ligado a
+// compra chega e nada é liberado; sem link de compra o botão de comprar fica
+// inerte. São as três coisas que mais travam um lançamento, e descobrir isso
+// abrindo curso por curso é como se perde uma tarde.
 
 function Pendencia({ texto }: { texto: string }) {
   return (
@@ -41,6 +42,9 @@ function Linha({ curso }: { curso: AdminCourseRow }) {
         <span className="flex flex-wrap items-center gap-2">
           {curso.lessonCount === 0 ? (
             <Pendencia texto="sem aulas" />
+          ) : null}
+          {!curso.temProduto ? (
+            <Pendencia texto="não libera na compra" />
           ) : null}
           {!curso.temCheckout ? <Pendencia texto="sem link de compra" /> : null}
         </span>

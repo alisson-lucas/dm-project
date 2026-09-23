@@ -5,6 +5,10 @@ Plataforma de vídeo-aulas com liberação de acesso via webhook da Hotmart.
 services → Prisma) vive em `src/services` / `src/lib` e não depende do
 framework — as rotas HTTP são só uma casca fina por cima.
 
+Outros documentos: [`docs/DEPLOY.md`](docs/DEPLOY.md) (subir pra produção e
+configurar a Hotmart, passo a passo) e
+[`docs/IMPLEMENTACAO.md`](docs/IMPLEMENTACAO.md) (arquitetura e histórico).
+
 ## Como rodar no VS Code
 
 1. Abra a pasta no VS Code (`File → Open Folder`, ou `code api-scaffold`).

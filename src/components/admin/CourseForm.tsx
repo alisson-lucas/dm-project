@@ -6,6 +6,7 @@ import type { Course } from "@prisma/client";
 import { salvarCurso, type FormState } from "@/app/admin/actions";
 import { slugify } from "@/services/adminCourses";
 import { btnGhost, btnPrimary } from "@/lib/ui";
+import { Campo, campo } from "./fields";
 
 // Formulário de curso — serve pra criar e pra editar. A diferença é só o campo
 // `id` escondido: com ele a ação atualiza, sem ele cria.
@@ -13,11 +14,6 @@ import { btnGhost, btnPrimary } from "@/lib/ui";
 // O estado vem do `useActionState`: quando a validação do servidor recusa, a
 // ação devolve os erros POR CAMPO e os valores digitados, então a tela remonta
 // exatamente como estava em vez de limpar o que a pessoa escreveu.
-
-const campo =
-  "w-full rounded-lg border border-white/10 bg-[#0f0f13] px-3.5 py-2.5 " +
-  "text-[0.92rem] text-text placeholder:text-text-faint/70 " +
-  "focus:border-accent-2 focus:outline-none";
 
 const NIVEIS = [
   { valor: "", rotulo: "Sem nível definido" },
@@ -32,32 +28,6 @@ const SERVICOS = [
   { valor: "VIMEO", rotulo: "Vimeo" },
   { valor: "PANDA", rotulo: "Panda Video" },
 ];
-
-function Campo({
-  label,
-  ajuda,
-  erro,
-  children,
-}: {
-  label: string;
-  ajuda?: string;
-  erro?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[0.78rem] font-semibold">{label}</span>
-      {children}
-      {erro ? (
-        <span className="mt-1.5 block text-[0.78rem] text-[#ff8a6b]">{erro}</span>
-      ) : ajuda ? (
-        <span className="mt-1.5 block text-[0.76rem] text-text-faint">
-          {ajuda}
-        </span>
-      ) : null}
-    </label>
-  );
-}
 
 export function CourseForm({
   curso,

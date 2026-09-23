@@ -10,6 +10,23 @@ import {
   type CourseErrors,
   type CourseInput,
 } from "@/services/adminCourses";
+import {
+  atualizarAula,
+  criarAula,
+  criarModulo,
+  criarProduto,
+  excluirAula,
+  excluirModulo,
+  excluirProduto,
+  lerDuracao,
+  moverAula,
+  moverModulo,
+  renomearModulo,
+  type LessonErrors,
+  type LessonInput,
+  type ProductErrors,
+  type ProductInput,
+} from "@/services/adminContent";
 
 // Server Actions em vez de rotas de API + fetch no cliente.
 //
@@ -76,4 +93,157 @@ export async function salvarCurso(
   revalidatePath("/", "layout");
 
   redirect(id ? `/admin/cursos/${id}?salvo=1` : "/admin?criado=1");
+}
+
+// ===========================================================================
+// Conteúdo do curso: produtos da Hotmart, módulos e aulas
+// ===========================================================================
+//
+// Cada ação revalida o admin pelo mesmo motivo de sempre: Server Action é um
+// endpoint HTTP, e o layout ter checado não impede alguém de chamar direto.
+
+/** contagem de aulas e duração aparecem na landing (ISR) e nos cards */
+function revalidarCatalogo() {
+  revalidatePath("/", "layout");
+}
+
+// --------------------------------------------------------------- produtos
+
+export interface ProdutoState {
+  erros: ProductErrors;
+  valores?: ProductInput;
+  /** o formulário de adicionar se limpa quando isto vem true */
+  ok?: boolean;
+}
+
+export async function salvarProduto(
+  _anterior: ProdutoState,
+  fd: FormData
+): Promise<ProdutoState> {
+  await requireAdmin();
+
+  const courseId = texto(fd, "courseId");
+  const input: ProductInput = {
+    hotmartProductId: texto(fd, "hotmartProductId"),
+    hotmartOfferCode: opcional(fd, "hotmartOfferCode"),
+  };
+
+  const resultado = await criarProduto(courseId, input);
+  if (!resultado.ok) return { erros: resultado.erros, valores: input };
+
+  revalidarCatalogo();
+  return { erros: {}, ok: true };
+}
+
+export async function removerProduto(fd: FormData): Promise<void> {
+  await requireAdmin();
+  await excluirProduto(texto(fd, "id"));
+  revalidarCatalogo();
+}
+
+// ---------------------------------------------------------------- módulos
+
+export interface ModuloState {
+  erro?: string;
+  ok?: boolean;
+}
+
+export async function salvarModulo(
+  _anterior: ModuloState,
+  fd: FormData
+): Promise<ModuloState> {
+  await requireAdmin();
+
+  const id = texto(fd, "id");
+  const title = texto(fd, "title");
+
+  const resultado = id
+    ? await renomearModulo(id, title)
+    : await criarModulo(texto(fd, "courseId"), title);
+
+  if (!resultado.ok) return { erro: resultado.erro };
+
+  revalidarCatalogo();
+  return { ok: true };
+}
+
+export async function removerModulo(fd: FormData): Promise<void> {
+  await requireAdmin();
+  await excluirModulo(texto(fd, "id"));
+  revalidarCatalogo();
+}
+
+export async function reordenarModulo(fd: FormData): Promise<void> {
+  await requireAdmin();
+  const direcao = texto(fd, "direcao") === "cima" ? "cima" : "baixo";
+  await moverModulo(texto(fd, "id"), direcao);
+  revalidarCatalogo();
+}
+
+// ------------------------------------------------------------------ aulas
+
+/** o que foi digitado, pra devolver ao formulário quando a validação recusa */
+export interface AulaValores {
+  title: string;
+  videoProvider: string;
+  videoExternalId: string;
+  duracao: string;
+}
+
+export interface AulaState {
+  erros: LessonErrors;
+  valores?: AulaValores;
+  ok?: boolean;
+}
+
+export async function salvarAula(
+  _anterior: AulaState,
+  fd: FormData
+): Promise<AulaState> {
+  await requireAdmin();
+
+  const id = texto(fd, "id");
+  const valores: AulaValores = {
+    title: texto(fd, "title"),
+    videoProvider: texto(fd, "videoProvider"),
+    videoExternalId: texto(fd, "videoExternalId"),
+    duracao: texto(fd, "duracao"),
+  };
+
+  const duracao = lerDuracao(valores.duracao);
+  if (!duracao.ok) {
+    return {
+      erros: { durationSeconds: "Use o formato 24:19 (ou só os segundos)." },
+      valores,
+    };
+  }
+
+  const input: LessonInput = {
+    title: valores.title,
+    videoProvider: (valores.videoProvider || "YOUTUBE") as VideoProvider,
+    videoExternalId: valores.videoExternalId,
+    durationSeconds: duracao.segundos,
+  };
+
+  const resultado = id
+    ? await atualizarAula(id, input)
+    : await criarAula(texto(fd, "moduleId"), input);
+
+  if (!resultado.ok) return { erros: resultado.erros, valores };
+
+  revalidarCatalogo();
+  return { erros: {}, ok: true };
+}
+
+export async function removerAula(fd: FormData): Promise<void> {
+  await requireAdmin();
+  await excluirAula(texto(fd, "id"));
+  revalidarCatalogo();
+}
+
+export async function reordenarAula(fd: FormData): Promise<void> {
+  await requireAdmin();
+  const direcao = texto(fd, "direcao") === "cima" ? "cima" : "baixo";
+  await moverAula(texto(fd, "id"), direcao);
+  revalidarCatalogo();
 }

@@ -83,7 +83,7 @@ export async function listarCursos() {
   const cursos = await prisma.course.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      _count: { select: { modules: true, enrollments: true } },
+      _count: { select: { modules: true, enrollments: true, products: true } },
       modules: { select: { _count: { select: { lessons: true } } } },
     },
   });
@@ -99,6 +99,8 @@ export async function listarCursos() {
     lessonCount: c.modules.reduce((n, m) => n + m._count.lessons, 0),
     temCheckout: Boolean(c.checkoutUrl),
     temIntro: Boolean(c.introVideoProvider && c.introVideoExternalId),
+    // sem produto ligado, a compra chega e o webhook não sabe o que liberar
+    temProduto: c._count.products > 0,
   }));
 }
 
