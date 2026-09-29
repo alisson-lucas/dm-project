@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { CourseLevel, VideoProvider } from "@prisma/client";
 import { requireAdmin } from "@/lib/admin";
+import { prisma } from "@/lib/prisma";
+import { SITE_URL } from "@/lib/site";
+import { AccessTokenPurpose, criarToken } from "@/services/accessToken";
 import {
   atualizarCurso,
   criarCurso,
@@ -246,4 +249,54 @@ export async function reordenarAula(fd: FormData): Promise<void> {
   const direcao = texto(fd, "direcao") === "cima" ? "cima" : "baixo";
   await moverAula(texto(fd, "id"), direcao);
   revalidarCatalogo();
+}
+
+// ===========================================================================
+// Alunos: link de acesso gerado à mão
+// ===========================================================================
+//
+// Existe porque o e-mail pode não estar configurado (ou simplesmente não
+// chegar). Sem isto, um aluno que comprou e não recebeu o link fica sem
+// nenhuma saída que não seja mexer no banco.
+//
+// O QUE ESTE BOTÃO DEVOLVE É UMA CREDENCIAL: quem tiver o link entra na conta
+// daquele aluno. Por isso ele só existe atrás do /admin, e a tela avisa.
+
+export interface LinkState {
+  url?: string;
+  expiraEm?: string;
+  erro?: string;
+  /** true quando o aluno já tinha senha — o link vira "trocar senha" */
+  redefinicao?: boolean;
+}
+
+export async function gerarLinkDeAcesso(
+  _anterior: LinkState,
+  fd: FormData
+): Promise<LinkState> {
+  await requireAdmin();
+
+  const userId = texto(fd, "userId");
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return { erro: "Aluno não encontrado." };
+
+  const redefinicao = user.passwordHash !== null;
+
+  const { token, expiraEm } = await criarToken(
+    user.id,
+    redefinicao
+      ? AccessTokenPurpose.PASSWORD_RESET
+      : AccessTokenPurpose.FIRST_ACCESS
+  );
+
+  return {
+    url: `${SITE_URL}/definir-senha?token=${encodeURIComponent(token)}`,
+    expiraEm: expiraEm.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    redefinicao,
+  };
 }

@@ -39,9 +39,35 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  enrollments Enrollment[]
+  enrollments  Enrollment[]
+  accessTokens AccessToken[]
 
   @@map("users")
+}
+
+// Link de uso único enviado por e-mail. É o que substitui o antigo
+// "primeiro acesso" por e-mail+senha, que deixava qualquer um reivindicar a
+// conta de um comprador só sabendo o endereço dele.
+enum AccessTokenPurpose {
+  FIRST_ACCESS // conta criada pela compra, aluno ainda não tem senha
+  PASSWORD_RESET // esqueceu a senha
+}
+
+model AccessToken {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Guardamos o HASH, nunca o token. Vazamento de banco não vira vazamento de
+  // contas: com o hash em mãos não dá pra montar o link.
+  tokenHash String             @unique @map("token_hash")
+  purpose   AccessTokenPurpose
+  expiresAt DateTime           @map("expires_at")
+  usedAt    DateTime?          @map("used_at") // uso único: depois disso não vale mais
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("access_tokens")
 }
 
 // ---------------------------------------------------------------------------

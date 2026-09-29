@@ -2,47 +2,59 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "../../../../lib/prisma";
 import { setSessionCookie } from "../../../../lib/session";
+import { AccessTokenPurpose, consumirToken } from "../../../../services/accessToken";
 
 export const dynamic = "force-dynamic";
 
-// PLACEHOLDER de primeiro acesso. O aluno é criado sem senha pelo webhook da
-// Hotmart (services/enrollment.ts#grantAccess). Aqui ele define a senha —
-// permitido SÓ enquanto `passwordHash` ainda é null.
+// Define a senha a partir de um LINK DE USO ÚNICO.
 //
-// PRODUÇÃO: isso precisa de um token único enviado por e-mail (o TODO de
-// "e-mail de boas-vindas / definição de senha" em enrollment.ts). Do jeito que
-// está, qualquer um que saiba o e-mail de um aluno recém-criado pode reivindicar
-// a conta antes dele. Não vá a público assim.
+// A versão anterior aceitava e-mail + senha e só conferia se `passwordHash`
+// ainda era null. Isso significava que qualquer um que soubesse o e-mail de um
+// comprador recém-criado podia reivindicar a conta antes dele — bastava
+// chegar primeiro. O token resolve: só entra quem recebeu o e-mail.
+//
+// O token é queimado por `consumirToken` ANTES da senha ser gravada. Se algo
+// falhar depois disso, o aluno pede outro link; o caro é o contrário, deixar
+// um link valendo duas vezes.
+
+const MENSAGEM: Record<string, string> = {
+  invalido: "Este link não é válido. Peça um novo na tela de entrada.",
+  expirado: "Este link expirou. Peça um novo na tela de entrada.",
+  usado: "Este link já foi usado. Peça um novo na tela de entrada.",
+};
+
 export async function POST(req: Request) {
-  const { email, password } = (await req.json().catch(() => ({}))) as {
-    email?: string;
+  const { token, password } = (await req.json().catch(() => ({}))) as {
+    token?: string;
     password?: string;
   };
 
-  if (!email || !password || password.length < 8) {
+  if (!password || password.length < 8) {
     return NextResponse.json(
-      { error: "email e senha (mínimo 8 caracteres) são obrigatórios" },
+      { error: "a senha precisa ter pelo menos 8 caracteres" },
       { status: 400 }
     );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: email.toLowerCase().trim() },
-  });
+  // Os dois tipos de link levam à mesma tela e à mesma ação: criar senha.
+  const resultado = await consumirToken(token ?? "", [
+    AccessTokenPurpose.FIRST_ACCESS,
+    AccessTokenPurpose.PASSWORD_RESET,
+  ]);
 
-  if (!user) {
-    return NextResponse.json({ error: "usuário não encontrado" }, { status: 404 });
-  }
-  if (user.passwordHash != null) {
+  if (!resultado.ok) {
     return NextResponse.json(
-      { error: "senha já definida — use /api/auth/login" },
-      { status: 409 }
+      { error: MENSAGEM[resultado.motivo] },
+      { status: 400 }
     );
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+  await prisma.user.update({
+    where: { id: resultado.userId },
+    data: { passwordHash },
+  });
 
-  await setSessionCookie(user.id);
+  await setSessionCookie(resultado.userId);
   return NextResponse.json({ ok: true });
 }

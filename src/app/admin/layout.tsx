@@ -28,6 +28,12 @@ export default async function AdminLayout({
           </span>
 
           <nav className="ml-auto flex items-center gap-4 text-[0.85rem]">
+            <Link href="/admin" className="text-text-dim transition-colors hover:text-text">
+              Cursos
+            </Link>
+            <Link href="/admin/alunos" className="text-text-dim transition-colors hover:text-text">
+              Alunos
+            </Link>
             <Link href="/app" className="text-text-dim transition-colors hover:text-text">
               Ver como aluno
             </Link>

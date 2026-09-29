@@ -1,6 +1,8 @@
 import { prisma } from "../lib/prisma";
 import { EnrollmentStatus } from "@prisma/client";
 import type { NormalizedHotmartEvent } from "../lib/hotmartPayload";
+import { AccessTokenPurpose, criarToken } from "./accessToken";
+import { emailDeBoasVindas, enviarEmail } from "./email";
 
 // Encontra o curso correspondente ao produto/oferta da Hotmart. Prioriza um
 // match exato de oferta; cai pro registro "curinga" (hotmartOfferCode null)
@@ -62,8 +64,30 @@ export async function grantAccess(event: NormalizedHotmartEvent) {
     },
   });
 
-  // TODO: disparar e-mail de boas-vindas com o link de acesso (e de definição
-  // de senha, se o usuário acabou de ser criado agora pelo upsert acima).
+  // E-mail de boas-vindas com o link pra criar a senha.
+  //
+  // A condição é `passwordHash === null`, e não "o usuário é novo": quem
+  // comprou antes e nunca chegou a definir a senha continua sem conseguir
+  // entrar, e uma compra nova é justamente a hora de mandar o link de novo.
+  //
+  // Falha de e-mail NÃO derruba a liberação de acesso: a matrícula já está
+  // gravada, e `enviarEmail` registra o link no log do servidor quando não
+  // consegue entregar. Perder o acesso por causa do provedor de e-mail seria
+  // trocar um problema por um pior.
+  if (user.passwordHash === null) {
+    try {
+      const { token } = await criarToken(user.id, AccessTokenPurpose.FIRST_ACCESS);
+      const curso = await prisma.course.findUnique({
+        where: { id: product.courseId },
+        select: { title: true },
+      });
+      await enviarEmail(
+        emailDeBoasVindas(user.email, token, curso?.title ?? "seu curso")
+      );
+    } catch (err) {
+      console.error("Falha ao preparar o e-mail de boas-vindas", user.email, err);
+    }
+  }
 }
 
 export async function revokeAccess(event: NormalizedHotmartEvent) {
